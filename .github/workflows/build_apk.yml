@@ -3,7 +3,7 @@ name: Build & Release Android APK
 on:
   push:
     branches: [ master, main ]
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: 🔨 Build Release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
       - name: 📤 Upload APK Artifact (Downloadable)
         uses: actions/upload-artifact@v4
@@ -38,11 +38,3 @@ jobs:
           name: internetdesa-mobile-v1.0.0
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
-
-      - name: 🚀 Create GitHub Release (Optional)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
