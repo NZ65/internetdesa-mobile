@@ -1,23 +1,26 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
 def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
+def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
+    localPropertiesFile.withReader("UTF-8") { reader ->
         localProperties.load(reader)
     }
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+    flutterVersionCode = "1"
 }
 
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
+    flutterVersionName = "1.0"
 }
-
-apply plugin: 'com.android.application'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace "id.my.internetdesaku.mobile"
@@ -27,6 +30,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -47,5 +54,5 @@ android {
 }
 
 flutter {
-    source '../..'
+    source "../.."
 }
