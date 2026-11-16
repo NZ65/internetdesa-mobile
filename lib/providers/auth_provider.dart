@@ -56,7 +56,7 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = response.data['message'] ?? 'Login gagal.';
       }
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
 
     _isLoading = false;
@@ -91,7 +91,7 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = response.data['message'] ?? 'Otentikasi GitHub gagal.';
       }
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
 
     _isLoading = false;
@@ -121,7 +121,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return response.data['success'] == true;
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
       notifyListeners();
       return false;

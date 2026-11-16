@@ -46,7 +46,7 @@ class SalesProvider extends ChangeNotifier {
         _errorMessage = response.data['message'];
       }
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
 
     _isLoading = false;
@@ -97,7 +97,7 @@ class SalesProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
       notifyListeners();
       return false;

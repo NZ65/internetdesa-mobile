@@ -27,7 +27,7 @@ class DashboardProvider extends ChangeNotifier {
         _errorMessage = response.data['message'] ?? 'Gagal memuat dashboard.';
       }
     } catch (e) {
-      _errorMessage = (e is dynamic && e.error != null) ? e.error.toString() : e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
 
     _isLoading = false;
