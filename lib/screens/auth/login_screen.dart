@@ -246,27 +246,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   // App Brand Logo & Title
                   Center(
                     child: Container(
-                      width: 80,
-                      height: 80,
+                      width: 84,
+                      height: 84,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.primaryBlue, AppTheme.accentCyan],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryBlue.withOpacity(0.3),
-                            blurRadius: 16,
+                            color: AppTheme.primaryBlue.withOpacity(0.25),
+                            blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.wifi_tethering_rounded,
-                        color: Colors.white,
-                        size: 44,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: 84,
+                          height: 84,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),

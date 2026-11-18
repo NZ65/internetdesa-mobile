@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Pembaruan Cyber-NOC, floating bottom nav bar, logo resmi, trouble tools, dan antrean pasang baru." \
+            -F "changelog=Pembaruan Resmi: Logo Baru Internet Desa Sukorejo di seluruh aplikasi & web dashboard, pembaruan ikon launcher, dan auto-update OTA." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."
