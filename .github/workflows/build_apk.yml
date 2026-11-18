@@ -42,13 +42,15 @@ jobs:
 
       - name: 🚀 Auto-Deploy APK Directly to Production Server
         run: |
-          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | tr -d '\r')
-          echo "Deploying APK version $VERSION directly to internetdesaku.my.id..."
+          RAW_VER=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | tr -d '\r')
+          VER_NAME=$(echo "$RAW_VER" | cut -d'+' -f1)
+          VER_CODE=$(echo "$RAW_VER" | cut -d'+' -f2)
+          echo "Deploying APK version $VER_NAME (code: $VER_CODE) directly to internetdesaku.my.id..."
           curl -f -s -X POST https://internetdesaku.my.id/api/mobile/deploy-apk \
             -H "x-deploy-token: ind_apk_deploy_sec_98273410fbc8921" \
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
-            -F "version=$VERSION" \
-            -F "version_code=2" \
+            -F "version=$VER_NAME" \
+            -F "version_code=$VER_CODE" \
             -F "changelog=Pembaruan Cyber-NOC, floating bottom nav bar, logo resmi, trouble tools, dan antrean pasang baru." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."
