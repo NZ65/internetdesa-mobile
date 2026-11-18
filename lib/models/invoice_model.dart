@@ -12,6 +12,7 @@ class InvoiceModel {
   final String? paymentMethod;
   final String? proofImage;
   final String? packageName;
+  final String? custId;
 
   InvoiceModel({
     required this.id,
@@ -27,6 +28,7 @@ class InvoiceModel {
     this.paymentMethod,
     this.proofImage,
     this.packageName,
+    this.custId,
   });
 
   bool get isPaid => status == 'paid';
@@ -47,6 +49,7 @@ class InvoiceModel {
       paymentMethod: json['payment_method']?.toString(),
       proofImage: json['proof_image']?.toString(),
       packageName: json['package_name']?.toString(),
+      custId: json['cust_id']?.toString() ?? json['customer_id']?.toString(),
     );
   }
 }

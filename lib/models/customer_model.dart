@@ -15,6 +15,8 @@ class CustomerModel {
   final int? packagePrice;
   final String? wifiSsid;
   final String? wifiPassword;
+  final String? dropcoreLength;
+  final String? onuSn;
 
   CustomerModel({
     required this.id,
@@ -33,6 +35,8 @@ class CustomerModel {
     this.packagePrice,
     this.wifiSsid,
     this.wifiPassword,
+    this.dropcoreLength,
+    this.onuSn,
   });
 
   bool get isIsolated => status == 'isolated' || status == 'suspended';
@@ -57,6 +61,8 @@ class CustomerModel {
       packagePrice: json['package_price'] != null ? int.tryParse(json['package_price'].toString()) : null,
       wifiSsid: json['wifi_ssid']?.toString(),
       wifiPassword: json['wifi_password']?.toString(),
+      dropcoreLength: json['dropcore_length']?.toString() ?? json['dropcore']?.toString(),
+      onuSn: json['onu_sn']?.toString() ?? json['modem_sn']?.toString() ?? json['sn']?.toString(),
     );
   }
 }

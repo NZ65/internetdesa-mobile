@@ -53,7 +53,7 @@ class UpdateService {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gagal memeriksa pembaruan: $e'),
-            backgroundColor: AppTheme.dangerRed,
+            backgroundColor: AppTheme.accentRed,
             behavior: SnackBarBehavior.floating,
           ),
         );

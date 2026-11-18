@@ -25,6 +25,10 @@ class StatusBadge extends StatelessWidget {
       icon = Icons.person_add_alt_1;
       label = (s == 'pasang_baru') ? 'Pasang Baru' : ((s == 'pending') ? 'Menunggu' : 'Diproses');
     } else if (s == 'isolated' || s == 'suspended' || s == 'unpaid' || s == 'belum lunas' || s == 'critical' || s == 'los') {
+      bg = const Color(0xFFFEE2E2);
+      fg = const Color(0xFFB91C1C);
+      icon = Icons.error_outline;
+      label = (s == 'suspended' || s == 'isolated') ? 'Isolir' : ((s == 'unpaid') ? 'Belum Bayar' : 'LOS / Rusak');
     } else {
       bg = const Color(0xFFF1F5F9);
       fg = const Color(0xFF475569);
