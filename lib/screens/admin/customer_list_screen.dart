@@ -280,7 +280,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              'IP: ${c.ipAddress.isNotEmpty ? c.ipAddress : "-"}',
+                                              'IP: ${(c.ipAddress != null && c.ipAddress!.isNotEmpty) ? c.ipAddress! : "-"}',
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 color: isDark ? Colors.grey[400] : const Color(0xFF64748B),

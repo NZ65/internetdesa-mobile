@@ -8,6 +8,8 @@ class DashboardData {
   final Map<String, dynamic>? olt;
   final List<dynamic> listItems; // recent_payments or work_orders or recent_registrations
 
+  List<dynamic> get unpaidInvoices => listItems;
+
   DashboardData({
     required this.role,
     required this.userName,

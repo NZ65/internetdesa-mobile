@@ -316,7 +316,7 @@ class _SalesDashboardTabState extends State<SalesDashboardTab> {
                                 final res = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => NewRegistrationScreen(selectedPackageId: p.id),
+                                    builder: (_) => const NewRegistrationScreen(),
                                   ),
                                 );
                                 if (res == true) _loadData();
