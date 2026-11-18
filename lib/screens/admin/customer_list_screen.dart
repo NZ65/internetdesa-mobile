@@ -40,27 +40,45 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     );
   }
 
+  void _openWhatsApp(String phone, String name) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final waPhone = cleanPhone.startsWith('0') ? '62${cleanPhone.substring(1)}' : (cleanPhone.startsWith('8') ? '62$cleanPhone' : cleanPhone);
+    final msg = Uri.encodeComponent('Halo Kak $name, dari layanan Internet Desa Sukorejo...');
+    final uri = Uri.parse('https://wa.me/$waPhone?text=$msg');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final custProvider = Provider.of<CustomerProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Pelanggan'),
+        title: const Text('Data Pelanggan & Jaringan'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Segarkan',
+            onPressed: _loadCustomers,
+          ),
+        ],
       ),
       body: Column(
         children: [
           // Search & Filter Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Cari nama, ID, no HP, atau PPPoE...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: const Icon(Icons.clear_rounded),
                         onPressed: () {
                           _searchController.clear();
                           _loadCustomers();
@@ -78,20 +96,22 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                _buildFilterChip('Semua', 'all'),
+                _buildFilterChip('Semua Pelanggan', 'all', count: null),
                 const SizedBox(width: 8),
-                _buildFilterChip('Aktif', 'active'),
+                _buildFilterChip('Aktif', 'active', count: null),
                 const SizedBox(width: 8),
-                _buildFilterChip('Isolir / Nunggak', 'isolated'),
+                _buildFilterChip('Isolir / Nunggak', 'isolated', count: null),
                 const SizedBox(width: 8),
                 _buildFilterChip(
-                  custProvider.pendingCount > 0 ? 'Pasang Baru (${custProvider.pendingCount})' : 'Pasang Baru',
+                  'Pasang Baru',
                   'pasang_baru',
+                  count: custProvider.pendingCount > 0 ? custProvider.pendingCount : null,
                 ),
               ],
             ),
           ),
-          const Divider(height: 16),
+          const SizedBox(height: 4),
+          const Divider(height: 1),
 
           // Customer List
           Expanded(
@@ -99,11 +119,13 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : custProvider.customers.isEmpty
                     ? EmptyState(
-                        icon: Icons.people_outline,
-                        title: _selectedStatus == 'pasang_baru' ? 'Tidak Ada Antrean Pasang Baru' : 'Pelanggan Tidak Ditemukan',
+                        icon: Icons.people_outline_rounded,
+                        title: _selectedStatus == 'pasang_baru'
+                            ? 'Tidak Ada Antrean Pasang Baru'
+                            : 'Pelanggan Tidak Ditemukan',
                         message: _selectedStatus == 'pasang_baru'
                             ? 'Seluruh calon pelanggan telah berhasil dipasang & diaktivasi.'
-                            : 'Coba ubah kata kunci pencarian atau filter status.',
+                            : 'Coba ubah kata kunci pencarian atau filter status pelanggan.',
                         onRetry: _loadCustomers,
                       )
                     : RefreshIndicator(
@@ -113,75 +135,183 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                           itemCount: custProvider.customers.length,
                           itemBuilder: (context, index) {
                             final c = custProvider.customers[index];
-                            return Card(
+                            final isPasang = c.isPasangBaru;
+                            final isIso = c.isIsolated;
+
+                            return Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: c.isPasangBaru
-                                    ? const BorderSide(color: Color(0xFFF59E0B), width: 1.5)
-                                    : BorderSide.none,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF131C2E) : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isPasang
+                                      ? AppTheme.accentOrange.withOpacity(0.5)
+                                      : (isIso
+                                          ? AppTheme.accentRed.withOpacity(0.35)
+                                          : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0))),
+                                  width: isPasang ? 1.5 : 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(isDark ? 0.35 : 0.04),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                leading: CircleAvatar(
-                                  backgroundColor: c.isPasangBaru
-                                      ? const Color(0xFFF59E0B).withOpacity(0.15)
-                                      : (c.isIsolated
-                                          ? AppTheme.accentRed.withOpacity(0.12)
-                                          : AppTheme.accentGreen.withOpacity(0.12)),
-                                  child: Icon(
-                                    c.isPasangBaru
-                                        ? Icons.person_add_alt_1
-                                        : (c.isIsolated ? Icons.block : Icons.wifi),
-                                    color: c.isPasangBaru
-                                        ? const Color(0xFFD97706)
-                                        : (c.isIsolated ? AppTheme.accentRed : AppTheme.accentGreen),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () {
+                                    if (isPasang) {
+                                      _showPasangBaruDialog(context, c);
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => CustomerDetailScreen(customerId: c.id),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 22,
+                                              backgroundColor: isPasang
+                                                  ? AppTheme.accentOrange.withOpacity(0.15)
+                                                  : (isIso
+                                                      ? AppTheme.accentRed.withOpacity(0.15)
+                                                      : AppTheme.primaryBlue.withOpacity(0.15)),
+                                              child: Icon(
+                                                isPasang
+                                                    ? Icons.person_add_alt_1_rounded
+                                                    : (isIso ? Icons.lock_clock_rounded : Icons.wifi_rounded),
+                                                color: isPasang
+                                                    ? AppTheme.accentOrange
+                                                    : (isIso ? AppTheme.accentRed : AppTheme.primaryBlue),
+                                                size: 22,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    c.name,
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w900,
+                                                      fontSize: 15,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                                        decoration: BoxDecoration(
+                                                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                                                          borderRadius: BorderRadius.circular(6),
+                                                        ),
+                                                        child: Text(
+                                                          c.custId,
+                                                          style: TextStyle(
+                                                            fontSize: 10.5,
+                                                            fontFamily: 'monospace',
+                                                            fontWeight: FontWeight.bold,
+                                                            color: isDark ? Colors.grey[300] : const Color(0xFF475569),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Expanded(
+                                                        child: Text(
+                                                          c.packageName ?? 'Paket Internet',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            StatusBadge(status: c.status),
+                                          ],
+                                        ),
+                                        if (c.address.isNotEmpty) ...[
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF64748B)),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  c.address,
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                        const SizedBox(height: 10),
+                                        const Divider(height: 1),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'IP: ${c.ipAddress.isNotEmpty ? c.ipAddress : "-"}',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+                                                fontFamily: 'monospace',
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                if (c.phone.isNotEmpty) ...[
+                                                  IconButton(
+                                                    icon: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF25D366), size: 18),
+                                                    tooltip: 'Chat WhatsApp',
+                                                    padding: EdgeInsets.zero,
+                                                    constraints: const BoxConstraints(),
+                                                    onPressed: () => _openWhatsApp(c.phone, c.name),
+                                                  ),
+                                                  const SizedBox(width: 14),
+                                                ],
+                                                Icon(
+                                                  isPasang ? Icons.info_outline_rounded : Icons.arrow_forward_ios_rounded,
+                                                  size: 14,
+                                                  color: isPasang ? AppTheme.accentOrange : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                title: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        c.name,
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    StatusBadge(status: c.status),
-                                  ],
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${c.custId} • ${c.packageName ?? "Paket Internet"}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    if (c.address.isNotEmpty)
-                                      Text(
-                                        c.address,
-                                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                  ],
-                                ),
-                                trailing: c.isPasangBaru
-                                    ? const Icon(Icons.info_outline, color: Color(0xFFD97706))
-                                    : const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  if (c.isPasangBaru) {
-                                    _showPasangBaruDialog(context, c);
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => CustomerDetailScreen(customerId: c.id),
-                                      ),
-                                    );
-                                  }
-                                },
                               ),
                             );
                           },
@@ -197,12 +327,13 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
           children: [
-            const Icon(Icons.person_add_alt_1, color: Color(0xFFD97706)),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text('Calon Pelanggan Pasang Baru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Icon(Icons.person_add_alt_1_rounded, color: AppTheme.accentOrange),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('Calon Pasang Baru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -211,7 +342,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Nama: ${c.name}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text('No Antrean: ${c.custId}'),
             const SizedBox(height: 4),
             Text('No HP: ${c.phone.isNotEmpty ? c.phone : "-"}'),
@@ -219,21 +350,22 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
             Text('Paket: ${c.packageName ?? "Paket Internet"}'),
             const SizedBox(height: 4),
             Text('Alamat: ${c.address.isNotEmpty ? c.address : "-"}'),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF3C7),
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.accentOrange.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.accentOrange.withOpacity(0.3)),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.info_outline, size: 16, color: Color(0xFFB45309)),
-                  SizedBox(width: 6),
+                  Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.accentOrange),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Menunggu penarikan dropcore & aktivasi teknisi.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFFB45309)),
+                      'Menunggu penarikan dropcore & aktivasi modem oleh teknisi.',
+                      style: TextStyle(fontSize: 11.5, color: AppTheme.accentOrange, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -244,19 +376,17 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
         actions: [
           if (c.phone.isNotEmpty)
             TextButton.icon(
-              onPressed: () async {
-                final cleanPhone = c.phone.replaceAll(RegExp(r'[^0-9]'), '');
-                final waPhone = cleanPhone.startsWith('0') ? '62${cleanPhone.substring(1)}' : cleanPhone;
-                final uri = Uri.parse('https://wa.me/$waPhone');
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-              icon: const Icon(Icons.chat, color: Colors.green),
-              label: const Text('Chat WhatsApp', style: TextStyle(color: Colors.green)),
+              onPressed: () => _openWhatsApp(c.phone, c.name),
+              icon: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF25D366), size: 18),
+              label: const Text('Chat WA', style: TextStyle(color: Color(0xFF25D366), fontWeight: FontWeight.bold)),
             ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('Tutup'),
           ),
         ],
@@ -264,11 +394,51 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, String value) {
+  Widget _buildFilterChip(String label, String value, {int? count}) {
     final isSelected = _selectedStatus == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ChoiceChip(
-      label: Text(label),
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : const Color(0xFF475569)),
+            ),
+          ),
+          if (count != null && count > 0) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white.withOpacity(0.3) : AppTheme.accentOrange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : AppTheme.accentOrange,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
       selected: isSelected,
+      selectedColor: AppTheme.primaryBlue,
+      backgroundColor: isDark ? const Color(0xFF131C2E) : const Color(0xFFF1F5F9),
+      side: BorderSide(
+        color: isSelected
+            ? AppTheme.primaryBlue
+            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (val) {
         if (val) {
           setState(() => _selectedStatus = value);

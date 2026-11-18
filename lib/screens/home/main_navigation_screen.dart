@@ -36,6 +36,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return const Scaffold(
@@ -58,27 +59,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       navItems = const [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard_outlined),
-          activeIcon: Icon(Icons.dashboard),
+          activeIcon: Icon(Icons.dashboard_rounded),
           label: 'Beranda',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
+          icon: Icon(Icons.people_alt_outlined),
+          activeIcon: Icon(Icons.people_alt_rounded),
           label: 'Pelanggan',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.receipt_long_outlined),
-          activeIcon: Icon(Icons.receipt_long),
+          activeIcon: Icon(Icons.receipt_long_rounded),
           label: 'Billing',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.build_outlined),
-          activeIcon: Icon(Icons.build),
-          label: 'Trouble Tools',
+          icon: Icon(Icons.build_circle_outlined),
+          activeIcon: Icon(Icons.build_circle_rounded),
+          label: 'Tools',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
+          icon: Icon(Icons.person_outline_rounded),
+          activeIcon: Icon(Icons.person_rounded),
           label: 'Profil',
         ),
       ];
@@ -92,22 +93,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       navItems = const [
         BottomNavigationBarItem(
           icon: Icon(Icons.engineering_outlined),
-          activeIcon: Icon(Icons.engineering),
-          label: 'Tiket & Tugas',
+          activeIcon: Icon(Icons.engineering_rounded),
+          label: 'Tugas',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.build_outlined),
-          activeIcon: Icon(Icons.build),
-          label: 'Trouble Tools',
+          icon: Icon(Icons.build_circle_outlined),
+          activeIcon: Icon(Icons.build_circle_rounded),
+          label: 'Tools',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
+          icon: Icon(Icons.people_alt_outlined),
+          activeIcon: Icon(Icons.people_alt_rounded),
           label: 'Pelanggan',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
+          icon: Icon(Icons.person_outline_rounded),
+          activeIcon: Icon(Icons.person_rounded),
           label: 'Profil',
         ),
       ];
@@ -120,24 +121,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ];
       navItems = const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.trending_up_outlined),
-          activeIcon: Icon(Icons.trending_up),
+          icon: Icon(Icons.trending_up_rounded),
+          activeIcon: Icon(Icons.trending_up_rounded),
           label: 'Beranda',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_add_alt_outlined),
-          activeIcon: Icon(Icons.person_add_alt_1),
+          activeIcon: Icon(Icons.person_add_alt_1_rounded),
           label: 'Pasang Baru',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
+          icon: Icon(Icons.person_outline_rounded),
+          activeIcon: Icon(Icons.person_rounded),
           label: 'Profil',
         ),
       ];
     }
 
-    // Guard index out of range on role switch
     if (_currentIndex >= screens.length) {
       _currentIndex = 0;
     }
@@ -149,17 +149,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF1E293B)
-                : Colors.white,
+            color: isDark ? const Color(0xFF131C2E) : Colors.white,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(isDark ? 0.45 : 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -171,10 +173,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              selectedItemColor: AppTheme.primaryBlue,
-              unselectedItemColor: Colors.grey[500],
+              selectedItemColor: isDark ? AppTheme.accentCyan : AppTheme.primaryBlue,
+              unselectedItemColor: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
               selectedFontSize: 11.5,
-              unselectedFontSize: 10.5,
+              unselectedFontSize: 11,
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
               items: navItems,

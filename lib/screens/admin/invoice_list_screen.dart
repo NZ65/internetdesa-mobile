@@ -397,22 +397,47 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                           itemCount: invProvider.invoices.length,
                           itemBuilder: (context, index) {
                             final inv = invProvider.invoices[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10),
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF131C2E) : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: inv.isUnpaid
+                                      ? AppTheme.accentRed.withOpacity(0.3)
+                                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(isDark ? 0.35 : 0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
                               child: Padding(
-                                padding: const EdgeInsets.all(14),
+                                padding: const EdgeInsets.all(16),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          inv.invoiceNumber,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color: Theme.of(context).primaryColor,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: (isDark ? const Color(0xFF0284C7) : AppTheme.primaryBlue).withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            inv.invoiceNumber,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11.5,
+                                              fontFamily: 'monospace',
+                                              color: isDark ? const Color(0xFF38BDF8) : AppTheme.primaryBlue,
+                                            ),
                                           ),
                                         ),
                                         Row(
@@ -420,7 +445,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                             StatusBadge(status: inv.status),
                                             const SizedBox(width: 4),
                                             IconButton(
-                                              icon: const Icon(Icons.edit, size: 16, color: Colors.grey),
+                                              icon: const Icon(Icons.edit_note_rounded, size: 20, color: Colors.grey),
                                               tooltip: 'Edit Invoice',
                                               padding: EdgeInsets.zero,
                                               constraints: const BoxConstraints(),
@@ -430,16 +455,18 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 10),
                                     Text(
                                       inv.customerName,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
                                     ),
                                     const SizedBox(height: 3),
                                     Text(
                                       'ID: ${inv.custId ?? "-"} • Jatuh Tempo: ${inv.dueDate ?? "-"} • ${inv.packageName ?? "Paket Internet"}',
-                                      style: TextStyle(fontSize: 11.5, color: Colors.grey[600]),
+                                      style: TextStyle(fontSize: 11.5, color: isDark ? Colors.grey[400] : const Color(0xFF64748B)),
                                     ),
+                                    const SizedBox(height: 12),
+                                    const Divider(height: 1),
                                     const SizedBox(height: 10),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -447,22 +474,22 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                         Text(
                                           _formatCurrency(inv.total),
                                           style: const TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppTheme.primaryBlue,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppTheme.accentGreen,
                                           ),
                                         ),
                                         if (inv.isUnpaid)
                                           ElevatedButton.icon(
                                             onPressed: () => _openPayDialog(inv),
-                                            icon: const Icon(Icons.payment, size: 15),
-                                            label: const Text('Bayar', style: TextStyle(fontSize: 12)),
+                                            icon: const Icon(Icons.payments_rounded, size: 16),
+                                            label: const Text('Bayar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: AppTheme.accentGreen,
                                               foregroundColor: Colors.white,
-                                              minimumSize: const Size(90, 36),
-                                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              minimumSize: const Size(96, 36),
+                                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                             ),
                                           ),
                                       ],
