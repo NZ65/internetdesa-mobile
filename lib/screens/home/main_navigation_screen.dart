@@ -49,17 +49,35 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const AdminDashboardTab(),
         const CustomerListScreen(),
         const InvoiceListScreen(),
-        const TechnicianDashboardTab(),
-        const SalesDashboardTab(),
+        const QuickToolsScreen(),
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'Beranda'),
-        BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'Pelanggan'),
-        BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: 'Billing'),
-        BottomNavigationBarItem(icon: Icon(Icons.build_outlined), activeIcon: Icon(Icons.build), label: 'Teknisi'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Sales'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard_outlined),
+          activeIcon: Icon(Icons.dashboard),
+          label: 'Beranda',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people_outline),
+          activeIcon: Icon(Icons.people),
+          label: 'Pelanggan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long_outlined),
+          activeIcon: Icon(Icons.receipt_long),
+          label: 'Billing',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.build_outlined),
+          activeIcon: Icon(Icons.build),
+          label: 'Trouble Tools',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profil',
+        ),
       ];
     } else if (user.role == 'teknisi') {
       screens = [
@@ -69,10 +87,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(icon: Icon(Icons.engineering_outlined), activeIcon: Icon(Icons.engineering), label: 'Tiket & Tugas'),
-        BottomNavigationBarItem(icon: Icon(Icons.router_outlined), activeIcon: Icon(Icons.router), label: 'Tools Modem'),
-        BottomNavigationBarItem(icon: Icon(Icons.people_outline), activeIcon: Icon(Icons.people), label: 'Cari Pelanggan'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.engineering_outlined),
+          activeIcon: Icon(Icons.engineering),
+          label: 'Tiket & Tugas',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.build_outlined),
+          activeIcon: Icon(Icons.build),
+          label: 'Trouble Tools',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people_outline),
+          activeIcon: Icon(Icons.people),
+          label: 'Pelanggan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profil',
+        ),
       ];
     } else {
       // Sales
@@ -82,9 +116,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(icon: Icon(Icons.trending_up_outlined), activeIcon: Icon(Icons.trending_up), label: 'Beranda'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_add_alt_outlined), activeIcon: Icon(Icons.person_add_alt_1), label: 'Pasang Baru'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.trending_up_outlined),
+          activeIcon: Icon(Icons.trending_up),
+          label: 'Beranda',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_add_alt_outlined),
+          activeIcon: Icon(Icons.person_add_alt_1),
+          label: 'Pasang Baru',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profil',
+        ),
       ];
     }
 
@@ -98,13 +144,40 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         index: _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (idx) => setState(() => _currentIndex = idx),
-        type: BottomNavigationBarType.fixed,
-        selectedFontSize: 12,
-        unselectedFontSize: 11,
-        items: navItems,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF1E293B)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (idx) => setState(() => _currentIndex = idx),
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedItemColor: AppTheme.primaryBlue,
+              unselectedItemColor: Colors.grey[500],
+              selectedFontSize: 11.5,
+              unselectedFontSize: 10.5,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+              items: navItems,
+            ),
+          ),
+        ),
       ),
     );
   }

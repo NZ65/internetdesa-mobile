@@ -7,10 +7,14 @@ class TicketProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
 
   List<TicketModel> _tickets = [];
+  Map<String, dynamic>? _toolsOverview;
+  List<dynamic> _losOnus = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   List<TicketModel> get tickets => _tickets;
+  Map<String, dynamic>? get toolsOverview => _toolsOverview;
+  List<dynamic> get losOnus => _losOnus;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -99,11 +103,90 @@ class TicketProvider extends ChangeNotifier {
       });
       return {
         'success': response.data['success'] == true,
-        'message': response.data['message'] ?? 'Berhasil ganti WiFi.',
+        'message': response.data['message'] ?? 'Berhasil ubah SSID & kata sandi Wi-Fi.',
       };
     } catch (e) {
       final msg = e.toString().replaceAll('Exception: ', '');
       return {'success': false, 'message': msg};
+    }
+  }
+
+  // Network Tools: Fetch Tools Overview (Live MikroTik & OLT Status)
+  Future<void> fetchToolsOverview() async {
+    try {
+      final response = await _api.get(AppConfig.epToolsOverview);
+      if (response.data['success'] == true) {
+        _toolsOverview = response.data['data'];
+        notifyListeners();
+      }
+    } catch (e) {}
+  }
+
+  // Network Tools: Ping Test
+  Future<Map<String, dynamic>> pingTest(String target) async {
+    try {
+      final response = await _api.post(AppConfig.epToolsPing, data: {
+        'target': target,
+      });
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
+  }
+
+  // Network Tools: Kick / Reset PPPoE Session
+  Future<Map<String, dynamic>> kickPppoe(String username, [int? customerId]) async {
+    try {
+      final response = await _api.post(AppConfig.epToolsKick, data: {
+        'username': username,
+        if (customerId != null) 'customer_id': customerId,
+      });
+      return {
+        'success': response.data['success'] == true,
+        'message': response.data['message'] ?? 'Perintah kick PPPoE terkirim.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
+  }
+
+  // Network Tools: Scan OLT LOS & Dying Gasp ONUs
+  Future<List<dynamic>> scanOltLos() async {
+    try {
+      final response = await _api.get(AppConfig.epToolsLos);
+      if (response.data['success'] == true) {
+        _losOnus = response.data['items'] ?? [];
+        notifyListeners();
+        return _losOnus;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Network Tools: Toggle Isolate / Restore Customer Service
+  Future<Map<String, dynamic>> toggleIsolate(int customerId, String action) async {
+    try {
+      final response = await _api.post(AppConfig.epToolsIsolate, data: {
+        'customer_id': customerId,
+        'action': action,
+      });
+      return {
+        'success': response.data['success'] == true,
+        'message': response.data['message'] ?? 'Aksi berhasil dieksekusi.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
     }
   }
 }

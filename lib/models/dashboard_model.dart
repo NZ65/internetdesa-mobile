@@ -4,6 +4,8 @@ class DashboardData {
   final int areaId;
   final String dateNow;
   final Map<String, dynamic> stats;
+  final Map<String, dynamic>? mikrotik;
+  final Map<String, dynamic>? olt;
   final List<dynamic> listItems; // recent_payments or work_orders or recent_registrations
 
   DashboardData({
@@ -12,6 +14,8 @@ class DashboardData {
     required this.areaId,
     required this.dateNow,
     required this.stats,
+    this.mikrotik,
+    this.olt,
     required this.listItems,
   });
 
@@ -31,6 +35,8 @@ class DashboardData {
       areaId: json['area_id'] ?? 3,
       dateNow: json['date_now'] ?? '',
       stats: Map<String, dynamic>.from(json['stats'] ?? {}),
+      mikrotik: json['mikrotik'] != null ? Map<String, dynamic>.from(json['mikrotik']) : null,
+      olt: json['olt'] != null ? Map<String, dynamic>.from(json['olt']) : null,
       listItems: items,
     );
   }

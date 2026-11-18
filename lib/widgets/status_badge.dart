@@ -19,16 +19,12 @@ class StatusBadge extends StatelessWidget {
       fg = const Color(0xFF15803D);
       icon = Icons.check_circle_outline;
       label = (s == 'active') ? 'Aktif' : ((s == 'paid') ? 'Lunas' : ((s == 'installed') ? 'Terpasang' : 'Selesai'));
-    } else if (s == 'isolated' || s == 'suspended' || s == 'unpaid' || s == 'belum lunas' || s == 'critical' || s == 'los') {
-      bg = const Color(0xFFFEE2E2);
-      fg = const Color(0xFFB91C1C);
-      icon = Icons.error_outline;
-      label = (s == 'isolated' || s == 'suspended') ? 'Isolir' : ((s == 'unpaid') ? 'Belum Bayar' : 'Gangguan');
-    } else if (s == 'pending' || s == 'in_progress' || s == 'survey') {
+    } else if (s == 'pasang_baru' || s == 'pending' || s == 'in_progress' || s == 'survey') {
       bg = const Color(0xFFFEF3C7);
       fg = const Color(0xFFB45309);
-      icon = Icons.access_time;
-      label = (s == 'pending') ? 'Menunggu' : 'Diproses';
+      icon = Icons.person_add_alt_1;
+      label = (s == 'pasang_baru') ? 'Pasang Baru' : ((s == 'pending') ? 'Menunggu' : 'Diproses');
+    } else if (s == 'isolated' || s == 'suspended' || s == 'unpaid' || s == 'belum lunas' || s == 'critical' || s == 'los') {
     } else {
       bg = const Color(0xFFF1F5F9);
       fg = const Color(0xFF475569);

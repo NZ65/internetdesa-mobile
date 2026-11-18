@@ -8,6 +8,7 @@ class CustomerProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
 
   List<CustomerModel> _customers = [];
+  int _pendingCount = 0;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -16,6 +17,7 @@ class CustomerProvider extends ChangeNotifier {
   bool _isLoadingDetail = false;
 
   List<CustomerModel> get customers => _customers;
+  int get pendingCount => _pendingCount;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -40,6 +42,9 @@ class CustomerProvider extends ChangeNotifier {
             .map((e) => CustomerModel.fromJson(e))
             .toList();
         _customers = list;
+        if (response.data['data']['pending_count'] != null) {
+          _pendingCount = int.tryParse(response.data['data']['pending_count'].toString()) ?? 0;
+        }
       } else {
         _errorMessage = response.data['message'];
       }

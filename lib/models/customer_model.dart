@@ -37,6 +37,7 @@ class CustomerModel {
 
   bool get isIsolated => status == 'isolated' || status == 'suspended';
   bool get isActive => status == 'active';
+  bool get isPasangBaru => status == 'pasang_baru' || status == 'pending';
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(

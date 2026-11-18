@@ -33,8 +33,8 @@ class RegistrationModel {
     this.createdAt,
   });
 
-  bool get isInstalled => status == 'installed';
-  bool get isPending => status == 'pending';
+  bool get isInstalled => status == 'installed' || status == 'selesai';
+  bool get isPending => status == 'pending' || status == 'survey' || status == 'approved' || status == 'proses';
 
   factory RegistrationModel.fromJson(Map<String, dynamic> json) {
     return RegistrationModel(

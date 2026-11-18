@@ -1,6 +1,6 @@
 class AppConfig {
   static const String appName = 'Internet Desa Mobile';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.1.0';
 
   // Default server URL - can be overridden in login settings
   static const String defaultBaseUrl = 'http://202.155.16.152:3000';
@@ -31,4 +31,11 @@ class AppConfig {
   static const String epSalesPackages = '/api/mobile/sales/packages';
   static const String epSalesRegistrations = '/api/mobile/sales/my-registrations';
   static const String epSalesRegister = '/api/mobile/sales/register';
+
+  // Network Trouble Tools Endpoints
+  static const String epToolsOverview = '/api/mobile/tools/overview';
+  static const String epToolsPing = '/api/mobile/tools/ping';
+  static const String epToolsKick = '/api/mobile/tools/kick-pppoe';
+  static const String epToolsLos = '/api/mobile/tools/olt-los';
+  static const String epToolsIsolate = '/api/mobile/tools/toggle-isolate';
 }

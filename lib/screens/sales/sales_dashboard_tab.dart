@@ -78,10 +78,30 @@ class _SalesDashboardTabState extends State<SalesDashboardTab> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: const Icon(Icons.campaign, color: Colors.white, size: 28),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.campaign,
+                        color: Color(0xFF4338CA),
+                        size: 28,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
