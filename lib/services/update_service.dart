@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../config/theme.dart';
@@ -6,6 +9,7 @@ import 'api_service.dart';
 
 class UpdateService {
   static bool _hasChecked = false;
+  static const MethodChannel _channel = MethodChannel('id.my.internetdesaku.mobile/updater');
 
   /// Checks for application updates from the server and shows prompt if available
   static Future<void> checkForUpdates(BuildContext context, {bool silent = true}) async {
@@ -60,9 +64,20 @@ class UpdateService {
       }
     }
   }
+
+  /// Installs downloaded APK via native MethodChannel
+  static Future<bool> installApk(String filePath) async {
+    try {
+      final res = await _channel.invokeMethod<bool>('installApk', {'filePath': filePath});
+      return res ?? false;
+    } catch (e) {
+      debugPrint('Error invoking installApk: $e');
+      return false;
+    }
+  }
 }
 
-class _UpdateDialog extends StatelessWidget {
+class _UpdateDialog extends StatefulWidget {
   final String currentVersion;
   final String latestVersion;
   final String changelog;
@@ -77,18 +92,98 @@ class _UpdateDialog extends StatelessWidget {
     required this.forceUpdate,
   });
 
-  void _startUpdate() async {
-    final uri = Uri.parse(downloadUrl);
-    if (await canLaunchUrl(uri)) {
+  @override
+  State<_UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends State<_UpdateDialog> {
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  String _statusText = '';
+  String? _errorMessage;
+
+  void _startInAppDownload() async {
+    setState(() {
+      _isDownloading = true;
+      _progress = 0.0;
+      _statusText = 'Menghubungkan ke server...';
+      _errorMessage = null;
+    });
+
+    try {
+      final tempDir = Directory.systemTemp;
+      final savePath = '${tempDir.path}/internetdesa_update.apk';
+      final file = File(savePath);
+      if (file.existsSync()) {
+        try { file.deleteSync(); } catch (_) {}
+      }
+
+      final dio = Dio();
+      await dio.download(
+        widget.downloadUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total > 0 && mounted) {
+            final p = received / total;
+            final recMb = (received / (1024 * 1024)).toStringAsFixed(1);
+            final totMb = (total / (1024 * 1024)).toStringAsFixed(1);
+            setState(() {
+              _progress = p;
+              _statusText = '${(p * 100).toInt()}% ($recMb MB / $totMb MB)';
+            });
+          }
+        },
+      );
+
+      if (mounted) {
+        setState(() {
+          _statusText = 'Membuka pemasang aplikasi...';
+        });
+      }
+
+      final ok = await UpdateService.installApk(savePath);
+      if (!ok && mounted) {
+        // Fallback to browser launch if native package manager intent had issue
+        _openInBrowser();
+      }
+    } catch (e) {
+      debugPrint('Download error: $e');
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _errorMessage = 'Gagal mengunduh langsung: $e';
+        });
+      }
+    }
+  }
+
+  void _openInBrowser() async {
+    final uri = Uri.parse(widget.downloadUrl);
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (e2) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tidak dapat membuka browser: $e2'),
+              backgroundColor: AppTheme.accentRed,
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: isDark ? const Color(0xFF131C2E) : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
@@ -98,11 +193,11 @@ class _UpdateDialog extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: AppTheme.primaryBlue.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(Icons.system_update_rounded, color: AppTheme.primaryBlue, size: 26),
                 ),
@@ -113,14 +208,14 @@ class _UpdateDialog extends StatelessWidget {
                     children: [
                       const Text(
                         'Pembaruan Tersedia',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'v$currentVersion ➔ v$latestVersion',
-                        style: TextStyle(
+                        'v${widget.currentVersion} ➔ v${widget.latestVersion}',
+                        style: const TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w800,
                           color: AppTheme.accentGreen,
                         ),
                       ),
@@ -138,38 +233,97 @@ class _UpdateDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
               ),
               child: Text(
-                changelog,
+                widget.changelog,
                 style: const TextStyle(fontSize: 12.5, height: 1.45),
               ),
             ),
-            const SizedBox(height: 20),
+
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentRed.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded, color: AppTheme.accentRed, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(fontSize: 11.5, color: AppTheme.accentRed),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            if (_isDownloading) ...[
+              const SizedBox(height: 18),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: _progress > 0 ? _progress : null,
+                  minHeight: 8,
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentGreen),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Mengunduh pembaruan...', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(
+                    _statusText,
+                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppTheme.accentGreen),
+                  ),
+                ],
+              ),
+            ],
+
+            const SizedBox(height: 22),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (!forceUpdate)
+                if (!widget.forceUpdate && !_isDownloading)
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Nanti Saja', style: TextStyle(color: Colors.grey)),
+                    child: const Text('Nanti', style: TextStyle(color: Colors.grey)),
                   ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: _startUpdate,
-                  icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Download & Update'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                if (!_isDownloading)
+                  ElevatedButton.icon(
+                    onPressed: _startInAppDownload,
+                    icon: const Icon(Icons.download_for_offline_rounded, size: 18),
+                    label: const Text('Update Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
-                ),
               ],
             ),
+            if (!_isDownloading) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton.icon(
+                  onPressed: _openInBrowser,
+                  icon: const Icon(Icons.open_in_browser_rounded, size: 14, color: AppTheme.primaryBlue),
+                  label: const Text('Atau unduh manual via Browser', style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue)),
+                ),
+              ),
+            ],
           ],
         ),
       ),

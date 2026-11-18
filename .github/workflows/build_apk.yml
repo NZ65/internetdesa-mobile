@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Pembaruan Tampilan UI Modern Cyber-NOC 2.0: Desain squircle 20px, navigasi floating frosted glass, visual perangkat OLT & MikroTik, indikator live NOC, katalog paket, dan aksi cepat WhatsApp." \
+            -F "changelog=Pembaruan Auto-Update Langsung: Unduh langsung di dalam aplikasi (in-app progress bar) dan auto-install APK tanpa browser." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

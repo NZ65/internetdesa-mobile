@@ -5,6 +5,7 @@ import '../../config/app_config.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/storage_service.dart';
+import '../../services/update_service.dart';
 import '../home/main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +20,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdates(context);
+    });
+  }
 
   @override
   void dispose() {
