@@ -1,9 +1,10 @@
 class AppConfig {
   static const String appName = 'Internet Desa Mobile';
   static const String appVersion = '1.1.0';
+  static const int appVersionCode = 2;
 
-  // Default server URL - can be overridden in login settings
-  static const String defaultBaseUrl = 'http://202.155.16.152:3000';
+  // Default server URL - Production HTTPS
+  static const String defaultBaseUrl = 'https://internetdesaku.my.id';
 
   // Storage Keys
   static const String keyToken = 'auth_token';
@@ -17,6 +18,7 @@ class AppConfig {
   static const String epGithubUrl = '/api/mobile/auth/github/url';
 
   // API Endpoints
+  static const String epVersion = '/api/mobile/version';
   static const String epLogin = '/api/mobile/auth/login';
   static const String epProfile = '/api/mobile/auth/profile';
   static const String epChangePassword = '/api/mobile/auth/change-password';

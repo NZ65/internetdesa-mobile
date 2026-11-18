@@ -36,6 +36,19 @@ jobs:
       - name: 📤 Upload APK Artifact (Downloadable)
         uses: actions/upload-artifact@v4
         with:
-          name: internetdesa-mobile-v1.0.0
+          name: internetdesa-mobile-latest
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      - name: 🚀 Auto-Deploy APK Directly to Production Server
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | tr -d '\r')
+          echo "Deploying APK version $VERSION directly to internetdesaku.my.id..."
+          curl -f -s -X POST https://internetdesaku.my.id/api/mobile/deploy-apk \
+            -H "x-deploy-token: ind_apk_deploy_sec_98273410fbc8921" \
+            -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
+            -F "version=$VERSION" \
+            -F "version_code=2" \
+            -F "changelog=Pembaruan Cyber-NOC, floating bottom nav bar, logo resmi, trouble tools, dan antrean pasang baru." \
+            && echo "✅ Auto-deploy to server SUCCEEDED!" \
+            || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

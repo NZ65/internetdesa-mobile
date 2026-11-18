@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/app_config.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/storage_service.dart';
+import '../../services/update_service.dart';
 import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -181,6 +183,14 @@ class ProfileScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showChangePasswordDialog(context),
                 ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.system_update_rounded, color: AppTheme.primaryBlue),
+                  title: const Text('Periksa Pembaruan Aplikasi'),
+                  subtitle: const Text('Versi ${AppConfig.appVersion} • Update Otomatis'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => UpdateService.checkForUpdates(context, silent: false),
+                ),
               ],
             ),
           ),
@@ -201,7 +211,7 @@ class ProfileScreen extends StatelessWidget {
 
           Center(
             child: Text(
-              'InternetDesa Mobile v1.0.0 • All-in-One Suite',
+              'InternetDesa Mobile v${AppConfig.appVersion} • All-in-One Suite',
               style: TextStyle(fontSize: 11, color: Colors.grey[500]),
             ),
           ),

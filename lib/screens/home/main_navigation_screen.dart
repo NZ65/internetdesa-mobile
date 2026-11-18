@@ -10,6 +10,7 @@ import '../technician/quick_tools_screen.dart';
 import '../sales/sales_dashboard_tab.dart';
 import '../sales/new_registration_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../services/update_service.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -26,6 +27,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<DashboardProvider>(context, listen: false).fetchDashboard();
+      UpdateService.checkForUpdates(context);
     });
   }
 
