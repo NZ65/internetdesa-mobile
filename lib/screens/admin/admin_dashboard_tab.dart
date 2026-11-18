@@ -6,10 +6,15 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/customer_provider.dart';
-import '../../widgets/stat_card.dart';
+import '../../widgets/bouncing_button.dart';
+import '../../widgets/dana_header.dart';
+import '../../widgets/dana_hero_card.dart';
+import '../../widgets/dana_service_grid.dart';
+import '../../widgets/dana_banner_carousel.dart';
 import '../../widgets/status_badge.dart';
 import 'customer_list_screen.dart';
 import 'invoice_list_screen.dart';
+import 'invoice_pay_dialog.dart';
 import '../technician/quick_tools_screen.dart';
 import '../sales/new_registration_screen.dart';
 
@@ -21,25 +26,52 @@ class AdminDashboardTab extends StatelessWidget {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
   }
 
-  void _openUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
   void _openWhatsApp(String phone, String name, dynamic amount) async {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final targetPhone = cleanPhone.startsWith('0')
         ? '62${cleanPhone.substring(1)}'
         : (cleanPhone.startsWith('8') ? '62$cleanPhone' : cleanPhone);
     final msg = Uri.encodeComponent(
-      'Halo Kak $name, ini pengingat tagihan internet Sukorejo Net sebesar ${_formatCurrency(amount)}. Silakan lakukan pembayaran agar koneksi internet tetap lancar. Terima kasih! 🙏'
+      'Halo Kak $name, ini pengingat tagihan internet Sukorejo Net sebesar ${_formatCurrency(amount)}. Silakan lakukan pembayaran agar koneksi internet tetap lancar. Terima kasih! 🙏',
     );
     final url = Uri.parse('https://wa.me/$targetPhone?text=$msg');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
+  }
+
+  void _showFeatureDialog(BuildContext context, String title, String message, IconData icon) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 13.5, height: 1.4)),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(90, 42),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -57,373 +89,168 @@ class AdminDashboardTab extends StatelessWidget {
 
     final isMtOnline = mt['connected'] == true;
     final isOltOnline = olt['connected'] == true;
+    final revenue = stats['revenue_this_month'] ?? stats['monthly_revenue'] ?? 0;
+    final activeCount = stats['active_customers'] ?? 0;
+    final isolatedCount = stats['isolated_customers'] ?? 0;
+    final unpaidCount = stats['unpaid_invoices_count'] ?? unpaidInvoices.length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppTheme.accentGreen,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'NOC ${user?.areaName ?? "Sukorejo Net"}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Segarkan Data',
-            onPressed: () => dash.fetchDashboard(),
-          ),
-        ],
-      ),
+      backgroundColor: isDark ? AppTheme.bgDark : AppTheme.bgLight,
       body: dash.isLoading && data == null
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: () => dash.fetchDashboard(),
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                children: [
-                  // ==========================================
-                  // 1. HERO BRAND & LIVE STATUS BANNER
-                  // ==========================================
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [const Color(0xFF0C4A6E), const Color(0xFF0369A1)]
-                            : [const Color(0xFF0284C7), const Color(0xFF0EA5E9)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF0284C7).withOpacity(0.35),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    // ==========================================
+                    // 1. DANA HEADER & HERO SALDO CARD
+                    // ==========================================
+                    Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => const Icon(
-                                  Icons.wifi,
-                                  color: Color(0xFF0284C7),
-                                  size: 28,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Halo, ${user?.name ?? user?.username}!',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    '${user?.roleDisplayName} • Sukorejo Wilayah 3',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.18),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.circle, color: Color(0xFF4ADE80), size: 7),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    'LIVE NOC',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        // DANA Gradient Curved Header
+                        DanaHeader(
+                          title: 'Halo, ${user?.username ?? "Admin"}',
+                          subtitle: isMtOnline && isOltOnline ? 'NOC & OLT Normal' : 'Koneksi NOC Terhubung',
+                          roleBadge: user?.role ?? 'Super Admin',
+                          isConnected: isMtOnline,
+                          isRefreshing: dash.isLoading,
+                          onRefresh: () => dash.fetchDashboard(),
                         ),
-                        const SizedBox(height: 16),
-                        // Mini stats ribbon inside hero
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildHeroStat('PPPoE Aktif', '${mt['active_pppoe'] ?? stats['active_customers'] ?? 0} Sesi', Icons.speed_rounded),
-                              Container(height: 24, width: 1, color: Colors.white.withOpacity(0.2)),
-                              _buildHeroStat('Kapasitas ODP', '${stats['total_odp_count'] ?? 16} Box', Icons.lan_rounded),
-                              Container(height: 24, width: 1, color: Colors.white.withOpacity(0.2)),
-                              _buildHeroStat('Tanggal', data?.dateNow ?? 'Hari ini', Icons.calendar_today_rounded),
+
+                        // Overlapping DANA Hero Card (Saldomu)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 96),
+                          child: DanaHeroCard(
+                            title: 'PENDAPATAN BULAN INI',
+                            primaryAmount: _formatCurrency(revenue),
+                            secondaryText: '$activeCount Aktif',
+                            actions: [
+                              DanaActionItem(
+                                label: 'Catat Bayar',
+                                icon: Icons.payments_rounded,
+                                iconColor: const Color(0xFF00B074),
+                                bgColor: const Color(0xFFE6F9F0),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
+                                  );
+                                },
+                              ),
+                              DanaActionItem(
+                                label: 'Pelanggan',
+                                icon: Icons.people_alt_rounded,
+                                iconColor: AppTheme.primaryBlue,
+                                bgColor: AppTheme.primaryLight,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const CustomerListScreen()),
+                                  );
+                                },
+                              ),
+                              DanaActionItem(
+                                label: 'Tagihan Unpaid',
+                                icon: Icons.receipt_long_rounded,
+                                iconColor: const Color(0xFFFF8B00),
+                                bgColor: const Color(0xFFFEF5E7),
+                                badgeText: unpaidCount > 0 ? '$unpaidCount' : null,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
+                                  );
+                                },
+                              ),
+                              DanaActionItem(
+                                label: 'Pasang Baru',
+                                icon: Icons.person_add_alt_1_rounded,
+                                iconColor: const Color(0xFF7C3AED),
+                                bgColor: const Color(0xFFF3E8FF),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                                  );
+                                },
+                              ),
+                            ],
+                            footerPills: [
+                              _buildMiniPill(
+                                context,
+                                label: 'Pelanggan Aktif',
+                                value: '$activeCount',
+                                color: const Color(0xFF00B074),
+                                icon: Icons.check_circle_outline,
+                              ),
+                              Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                              _buildMiniPill(
+                                context,
+                                label: 'Menunggak',
+                                value: '$unpaidCount',
+                                color: const Color(0xFFFF8B00),
+                                icon: Icons.hourglass_empty_rounded,
+                              ),
+                              Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                              _buildMiniPill(
+                                context,
+                                label: 'Isolir',
+                                value: '$isolatedCount',
+                                color: const Color(0xFFF43F5E),
+                                icon: Icons.block_rounded,
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                  ),
 
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
-                  // ==========================================
-                  // 2. STATUS PERANGKAT CORE & OLT (INTERAKTIF)
-                  // ==========================================
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Infrastruktur Jaringan Core',
-                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
-                      ),
-                      Text(
-                        'MikroTik & OLT',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      // MikroTik Card
-                      Expanded(
-                        child: _buildDeviceCard(
-                          context,
-                          title: mt['name']?.toString() ?? 'MikroTik Core',
-                          subtitle: 'IP: ${mt['host'] ?? "10.10.10.4"}',
-                          isOnline: isMtOnline,
+                    // ==========================================
+                    // 2. DANA 4x2 SERVICE GRID ("Layanan Internet")
+                    // ==========================================
+                    DanaServiceGrid(
+                      title: 'Layanan & Diagnostik ISP',
+                      items: [
+                        DanaServiceItem(
+                          label: 'Router MikroTik',
                           icon: Icons.router_rounded,
-                          accentColor: AppTheme.accentGreen,
-                          metric1Label: 'CPU Load',
-                          metric1Value: '${mt['cpu_load'] ?? 0}%',
-                          metric2Label: 'PPPoE',
-                          metric2Value: '${mt['active_pppoe'] ?? stats['active_customers'] ?? 0}',
-                          btnLabel: 'Buka WebFig',
-                          onBtnTap: () => _openUrl(mt['webfig_url'] ?? 'http://10.10.10.4'),
+                          iconColor: const Color(0xFF0284C7),
+                          bgColor: const Color(0xFFE0F2FE),
+                          badgeText: isMtOnline ? 'LIVE' : 'OFF',
+                          onTap: () {
+                            _showFeatureDialog(
+                              context,
+                              'MikroTik Router RB',
+                              'Status: ${isMtOnline ? "Online & Terhubung" : "Offline"}\nIP: ${mt["host"] ?? "192.168.1.1"}\nActive Sessions: ${mt["active_pppoe"] ?? activeCount}',
+                              Icons.router_rounded,
+                            );
+                          },
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      // OLT Card
-                      Expanded(
-                        child: _buildDeviceCard(
-                          context,
-                          title: olt['name']?.toString() ?? 'C-Data OLT EPON',
-                          subtitle: 'IP: ${olt['host'] ?? "10.10.10.3"}',
-                          isOnline: isOltOnline,
+                        DanaServiceItem(
+                          label: 'OLT C-Data',
                           icon: Icons.hub_rounded,
-                          accentColor: AppTheme.primaryBlue,
-                          metric1Label: 'Status PON',
-                          metric1Value: isOltOnline ? 'Active' : 'Offline',
-                          metric2Label: 'Uptime',
-                          metric2Value: olt['uptime']?.toString() ?? '-',
-                          btnLabel: 'Buka OLT Web',
-                          onBtnTap: () => _openUrl(olt['web_url'] ?? 'http://10.10.10.3'),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ==========================================
-                  // 3. STATISTIK OPERASIONAL (4-GRID MODERN)
-                  // ==========================================
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Ringkasan Bisnis & Pelanggan',
-                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const CustomerListScreen()),
-                          );
-                        },
-                        child: const Text(
-                          'Lihat Semua →',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryBlue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Grid 1: Pelanggan Aktif & Pendapatan Bulan Ini
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatCard(
-                          title: 'Pelanggan Aktif',
-                          value: '${stats['active_customers'] ?? 0}',
-                          subtitle: 'Dari ${stats['total_customers'] ?? 0} total pelanggan',
-                          icon: Icons.people_alt_rounded,
-                          color: const Color(0xFF0284C7),
-                          badgeText: 'ONLINE',
-                          badgeColor: const Color(0xFF0284C7),
+                          iconColor: const Color(0xFF00B074),
+                          bgColor: const Color(0xFFE6F9F0),
+                          badgeText: isOltOnline ? 'OK' : null,
                           onTap: () {
-                            Navigator.push(
+                            _showFeatureDialog(
                               context,
-                              MaterialPageRoute(builder: (_) => const CustomerListScreen()),
+                              'OLT C-Data PON',
+                              'Status: ${isOltOnline ? "Online & Normal" : "Offline"}\nModel: FD1608S-B0\nTotal ONT Terkoneksi: ${olt["active_onus"] ?? activeCount}',
+                              Icons.hub_rounded,
                             );
                           },
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StatCard(
-                          title: 'Pendapatan Bulan Ini',
-                          value: _formatCurrency(stats['paid_income'] ?? stats['monthly_income'] ?? 0),
-                          subtitle: '${stats['paid_invoices_count'] ?? 0} invoice lunas',
-                          icon: Icons.account_balance_wallet_rounded,
-                          color: AppTheme.accentGreen,
-                          badgeText: 'LUNAS',
-                          badgeColor: AppTheme.accentGreen,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Grid 2: Tunggakan Belum Bayar & Antrean Pasang Baru
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatCard(
-                          title: 'Belum Lunas / Isolir',
-                          value: _formatCurrency(stats['unpaid_amount'] ?? 0),
-                          subtitle: '${stats['unpaid_invoices_count'] ?? stats['isolated_customers'] ?? 0} pelanggan tertunggak',
-                          icon: Icons.warning_amber_rounded,
-                          color: AppTheme.accentRed,
-                          badgeText: 'PERLU DITAGIH',
-                          badgeColor: AppTheme.accentRed,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StatCard(
-                          title: 'Pasang Baru',
-                          value: '${stats['pending_registrations'] ?? 0}',
-                          subtitle: 'Menunggu penarikan kabel',
-                          icon: Icons.person_add_alt_1_rounded,
-                          color: AppTheme.accentOrange,
-                          badgeText: 'ANTREAN',
-                          badgeColor: AppTheme.accentOrange,
-                          onTap: () {
-                            Provider.of<CustomerProvider>(context, listen: false)
-                                .fetchCustomers(status: 'pasang_baru');
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const CustomerListScreen()),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // ==========================================
-                  // 4. MENU AKSI CEPAT (TACTILE CHIPS)
-                  // ==========================================
-                  const Text(
-                    'Aksi Cepat Manajemen',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 10),
-
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildActionPill(
-                          context,
-                          label: 'Trouble Tools',
-                          icon: Icons.build_circle_rounded,
-                          color: AppTheme.accentCyan,
+                        DanaServiceItem(
+                          label: 'Reboot ONT',
+                          icon: Icons.restart_alt_rounded,
+                          iconColor: const Color(0xFFFF8B00),
+                          bgColor: const Color(0xFFFEF5E7),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -431,362 +258,399 @@ class AdminDashboardTab extends StatelessWidget {
                             );
                           },
                         ),
-                        const SizedBox(width: 8),
-                        _buildActionPill(
-                          context,
-                          label: 'Pasang Baru',
-                          icon: Icons.person_add_rounded,
-                          color: AppTheme.accentOrange,
+                        DanaServiceItem(
+                          label: 'Ganti Wi-Fi',
+                          icon: Icons.wifi_password_rounded,
+                          iconColor: const Color(0xFF7C3AED),
+                          bgColor: const Color(0xFFF3E8FF),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                              MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
                             );
                           },
                         ),
-                        const SizedBox(width: 8),
-                        _buildActionPill(
-                          context,
-                          label: 'Tagihan & Invoice',
-                          icon: Icons.receipt_long_rounded,
-                          color: AppTheme.accentGreen,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        _buildActionPill(
-                          context,
-                          label: 'Peta ODP Jaringan',
+                        DanaServiceItem(
+                          label: 'Peta ODP / GIS',
                           icon: Icons.map_rounded,
-                          color: AppTheme.accentPurple,
-                          onTap: () => _openUrl('https://internetdesaku.my.id/portal/'),
+                          iconColor: const Color(0xFF0284C7),
+                          bgColor: const Color(0xFFE0F2FE),
+                          onTap: () {
+                            _showFeatureDialog(
+                              context,
+                              'Peta ODP & Fiber Optik',
+                              'Modul pemetaan GIS ODP 8-Port dan redaman fiber optik aktif terintegrasi di web portal.',
+                              Icons.map_rounded,
+                            );
+                          },
+                        ),
+                        DanaServiceItem(
+                          label: 'Rekap Material',
+                          icon: Icons.inventory_2_rounded,
+                          iconColor: const Color(0xFFEC4899),
+                          bgColor: const Color(0xFFFCE7F3),
+                          onTap: () {
+                            _showFeatureDialog(
+                              context,
+                              'Rekap Dropcore & ONT',
+                              'Laporan pemakaian kabel dropcore dan unit ONT terpakai telah disinkronkan ke server.',
+                              Icons.inventory_2_rounded,
+                            );
+                          },
+                        ),
+                        DanaServiceItem(
+                          label: 'WhatsApp Gateway',
+                          icon: Icons.chat_bubble_rounded,
+                          iconColor: const Color(0xFF10B981),
+                          bgColor: const Color(0xFFE8F5E9),
+                          badgeText: 'BOT',
+                          onTap: () {
+                            _showFeatureDialog(
+                              context,
+                              'WhatsApp Gateway Baileys',
+                              'Bot WhatsApp aktif melayani kirim kuitansi otomatis saat bayar dan reminder tagihan.',
+                              Icons.chat_bubble_rounded,
+                            );
+                          },
+                        ),
+                        DanaServiceItem(
+                          label: 'Auto-Update',
+                          icon: Icons.system_update_rounded,
+                          iconColor: AppTheme.primaryBlue,
+                          bgColor: AppTheme.primaryLight,
+                          badgeText: 'v1.3.2',
+                          onTap: () {
+                            _showFeatureDialog(
+                              context,
+                              'Pembaruan Aplikasi OTA',
+                              'Versi Terbaru: v1.3.2 (DANA Style)\nIn-App Auto Downloader & Installer aktif.',
+                              Icons.system_update_rounded,
+                            );
+                          },
                         ),
                       ],
                     ),
-                  ),
 
-                  const SizedBox(height: 22),
+                    const SizedBox(height: 16),
 
-                  // ==========================================
-                  // 5. DAFTAR TAGIHAN PERLU PERHATIAN
-                  // ==========================================
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tagihan Menunggu Konfirmasi',
-                        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
-                      ),
-                      Text(
-                        '${unpaidInvoices.length} Data',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.accentRed,
+                    // ==========================================
+                    // 3. DANA PROMO & INFO BANNER CAROUSEL
+                    // ==========================================
+                    DanaBannerCarousel(
+                      banners: [
+                        DanaBannerItem(
+                          tag: 'INFO NOC',
+                          title: 'Internet Desa Sukorejo',
+                          subtitle: 'Jaringan fiber optik dedicated 24 jam stabil tanpa batasan kuota FUP.',
+                          icon: Icons.speed_rounded,
+                          gradientColors: const [Color(0xFF118EEA), Color(0xFF0073C7)],
+                          onTap: () {},
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+                        DanaBannerItem(
+                          tag: 'UPDATE v1.3.2',
+                          title: 'Desain Baru DANA Style!',
+                          subtitle: 'Tampilan bersih, animasi responsif, dan layout kartu modern ala dompet digital.',
+                          icon: Icons.auto_awesome_rounded,
+                          gradientColors: const [Color(0xFF00B074), Color(0xFF059669)],
+                          onTap: () {},
+                        ),
+                        DanaBannerItem(
+                          tag: 'OTOMASI',
+                          title: 'Bayar & Auto-Buka Isolir',
+                          subtitle: 'Pelanggan bayar langsung sinkron ke MikroTik dan kirim struk WhatsApp.',
+                          icon: Icons.bolt_rounded,
+                          gradientColors: const [Color(0xFFFF8B00), Color(0xFFEA580C)],
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
 
-                  if (unpaidInvoices.isEmpty)
+                    const SizedBox(height: 16),
+
+                    // ==========================================
+                    // 4. DANA FEED / TAGIHAN UNPAID & RECENT
+                    // ==========================================
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF131C2E) : Colors.white,
+                        color: isDark ? AppTheme.cardDark : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                          color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                          width: 1,
                         ),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.check_circle_rounded, color: AppTheme.accentGreen, size: 28),
-                          SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Semua Tagihan Tertata!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                Text('Tidak ada tunggakan jatuh tempo mendesak saat ini.', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                              ],
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                    )
-                  else
-                    ...unpaidInvoices.take(5).map((inv) {
-                      final custName = inv['customer_name'] ?? inv['cust_name'] ?? 'Pelanggan';
-                      final custPhone = inv['customer_phone'] ?? inv['phone'] ?? '';
-                      final amount = inv['amount'] ?? inv['total_amount'] ?? 0;
-                      final dueDate = inv['due_date'] ?? '-';
-                      final isIsolated = inv['status'] == 'isolated' || inv['customer_status'] == 'isolated';
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isIsolated
-                                ? AppTheme.accentRed.withOpacity(0.3)
-                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: isIsolated
-                                  ? AppTheme.accentRed.withOpacity(0.15)
-                                  : AppTheme.accentOrange.withOpacity(0.15),
-                              radius: 20,
-                              child: Icon(
-                                isIsolated ? Icons.lock_clock_rounded : Icons.receipt_rounded,
-                                color: isIsolated ? AppTheme.accentRed : AppTheme.accentOrange,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    custName,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Jatuh tempo: $dueDate',
-                                    style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : const Color(0xFF64748B)),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _formatCurrency(amount),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      color: AppTheme.accentRed,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 4,
+                                      height: 18,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryBlue,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Tagihan Menunggak (${unpaidInvoices.length})',
+                                      style: TextStyle(
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Lihat Semua >',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.primaryBlue,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            if (custPhone.isNotEmpty)
-                              IconButton(
-                                icon: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF25D366)),
-                                tooltip: 'Kirim Pengingat WA',
-                                onPressed: () => _openWhatsApp(custPhone, custName, amount),
-                              ),
-                            StatusBadge(status: isIsolated ? 'isolated' : 'unpaid'),
-                          ],
-                        ),
-                      );
-                    }),
+                          ),
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: isDark ? AppTheme.borderDark : const Color(0xFFF1F5F9),
+                          ),
 
-                  const SizedBox(height: 20),
-                ],
+                          if (unpaidInvoices.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(28.0),
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 52,
+                                      height: 52,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFE6F9F0),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.check_circle_rounded, color: Color(0xFF00B074), size: 30),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      'Semua Tagihan Lunas! 🎉',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Tidak ada tagihan tertunda untuk saat ini.',
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: unpaidInvoices.length > 5 ? 5 : unpaidInvoices.length,
+                              separatorBuilder: (_, __) => Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: isDark ? AppTheme.borderDark : const Color(0xFFF8FAFD),
+                              ),
+                              itemBuilder: (context, idx) {
+                                final inv = unpaidInvoices[idx];
+                                final name = inv['customer_name'] ?? inv['nama'] ?? 'Pelanggan';
+                                final phone = inv['customer_phone'] ?? inv['phone'] ?? '';
+                                final amount = inv['amount'] ?? inv['total_amount'] ?? 0;
+                                final dueDate = inv['due_date'] ?? inv['periode'] ?? '-';
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: Row(
+                                    children: [
+                                      // Avatar Circle with initial
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFEF5E7),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: const Color(0xFFFF8B00).withOpacity(0.3), width: 1),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            name.isNotEmpty ? name[0].toUpperCase() : 'P',
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w900,
+                                              color: Color(0xFFFF8B00),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Details
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style: TextStyle(
+                                                fontSize: 13.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Jatuh Tempo: $dueDate',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Amount & Actions
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            _formatCurrency(amount),
+                                            style: const TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFFF43F5E),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (phone.isNotEmpty) ...[
+                                                BouncingButton(
+                                                  onTap: () => _openWhatsApp(phone, name, amount),
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFE8F5E9),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: const Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(Icons.chat_bubble_outline_rounded, size: 12, color: Color(0xFF00B074)),
+                                                        SizedBox(width: 3),
+                                                        Text('WA', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF00B074))),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                              ],
+                                              BouncingButton(
+                                                onTap: () {
+                                                  // Open Pay Dialog
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) => InvoicePayDialog(
+                                                      invoiceId: inv['id'] is int ? inv['id'] : int.tryParse(inv['id'].toString()) ?? 0,
+                                                      customerName: name,
+                                                      amount: (amount is num) ? amount.toDouble() : (double.tryParse(amount.toString()) ?? 0.0),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme.primaryBlue,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: const Text(
+                                                    'Bayar',
+                                                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
     );
   }
 
-  Widget _buildHeroStat(String title, String val, IconData icon) {
-    return Column(
+  Widget _buildMiniPill(BuildContext context, {
+    required String label,
+    required String value,
+    required Color color,
+    required IconData icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.9), size: 16),
-        const SizedBox(height: 4),
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 4),
         Text(
-          val,
-          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900),
+          '$label: ',
+          style: TextStyle(
+            fontSize: 10.5,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
         ),
         Text(
-          title,
-          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 10),
+          value,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDeviceCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required bool isOnline,
-    required IconData icon,
-    required Color accentColor,
-    required String metric1Label,
-    required String metric1Value,
-    required String metric2Label,
-    required String metric2Value,
-    required String btnLabel,
-    required VoidCallback onBtnTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131C2E) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isOnline ? accentColor.withOpacity(0.3) : AppTheme.accentRed.withOpacity(0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: isOnline ? accentColor.withOpacity(0.12) : AppTheme.accentRed.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: isOnline ? accentColor : AppTheme.accentRed, size: 20),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                decoration: BoxDecoration(
-                  color: isOnline ? const Color(0xFF10B981).withOpacity(0.15) : AppTheme.accentRed.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  isOnline ? 'ONLINE' : 'OFFLINE',
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
-                    color: isOnline ? const Color(0xFF10B981) : AppTheme.accentRed,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 10.5,
-              color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-              fontFamily: 'monospace',
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(metric1Label, style: TextStyle(fontSize: 10.5, color: isDark ? Colors.grey[400] : Colors.grey[600])),
-              Text(metric1Value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(metric2Label, style: TextStyle(fontSize: 10.5, color: isDark ? Colors.grey[400] : Colors.grey[600])),
-              Text(metric2Value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 30,
-            child: OutlinedButton(
-              onPressed: onBtnTap,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                side: BorderSide(color: accentColor.withOpacity(0.5)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: Text(
-                btnLabel,
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: accentColor),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionPill(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF131C2E) : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: color.withOpacity(isDark ? 0.3 : 0.25),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 16),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

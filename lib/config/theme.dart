@@ -2,85 +2,100 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand Colors - Cyber-NOC Palette
-  static const Color primaryBlue = Color(0xFF0284C7); // Sky / Electric Blue
-  static const Color primaryDark = Color(0xFF0A192F); // Deep Navy
-  static const Color accentCyan = Color(0xFF06B6D4); // Bright Cyan
-  static const Color accentGreen = Color(0xFF10B981); // Emerald Neon
-  static const Color accentOrange = Color(0xFFF59E0B); // Amber Warning
-  static const Color accentRed = Color(0xFFF43F5E); // Crimson Rose
-  static const Color accentPurple = Color(0xFF8B5CF6); // Indigo / Violet
+  // ==========================================
+  // DANA Signature Brand Colors
+  // ==========================================
+  static const Color primaryBlue = Color(0xFF118EEA);      // Official DANA Cerulean Blue
+  static const Color primaryDark = Color(0xFF0E70CD);      // Deep DANA Blue
+  static const Color primaryLight = Color(0xFFE8F4FD);     // Ultra Soft Blue Surface
+  static const Color accentCyan = Color(0xFF00B4D8);       // Bright Sky Cyan
+  static const Color accentGreen = Color(0xFF00B074);      // DANA Success Green
+  static const Color accentOrange = Color(0xFFFF8B00);     // DANA Amber Warning
+  static const Color accentRed = Color(0xFFF43F5E);        // DANA Crimson Rose
+  static const Color accentPurple = Color(0xFF7C3AED);     // Indigo Violet
 
-  // Dark Mode Surface Colors
-  static const Color bgDark = Color(0xFF090D16); // Deep Obsidian
-  static const Color cardDark = Color(0xFF131C2E); // Sleek Surface Card
-  static const Color surfaceDark = Color(0xFF0F172A); // Midnight Header
-  static const Color borderDark = Color(0xFF1E293B); // Subtle Divider
+  // Backgrounds & Surface
+  static const Color bgLight = Color(0xFFF5F8FB);          // Clean Soft Ice-Blue / Light Grey
+  static const Color cardLight = Colors.white;             // Pure Crisp White
+  static const Color borderLight = Color(0xFFE6EEF5);       // Subtle Clean Border
 
-  // Glassmorphism / Modern Card Decoration Helper
+  // Dark Mode Surface Colors (Optional Dark Palette keeping DANA Blue spirit)
+  static const Color bgDark = Color(0xFF0B132B);          // Deep Midnight Navy
+  static const Color cardDark = Color(0xFF1C2541);        // Clean Navy Card
+  static const Color surfaceDark = Color(0xFF111C38);     // Midnight Surface
+  static const Color borderDark = Color(0xFF2E3E61);      // Subtle Navy Border
+
+  // Header Gradient (Signature DANA App Header)
+  static const LinearGradient danaHeaderGradient = LinearGradient(
+    colors: [Color(0xFF118EEA), Color(0xFF0D77C7)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // Modern DANA Card Decoration
   static BoxDecoration cardDecoration(BuildContext context, {Color? accentColor, bool isSelected = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return BoxDecoration(
-      color: isDark ? cardDark : Colors.white,
+      color: isDark ? cardDark : cardLight,
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
         color: isSelected && accentColor != null
             ? accentColor
-            : (isDark ? (accentColor?.withOpacity(0.25) ?? borderDark) : const Color(0xFFE2E8F0)),
+            : (isDark ? borderDark : borderLight),
         width: isSelected ? 1.5 : 1,
       ),
       boxShadow: [
         BoxShadow(
           color: isDark
               ? Colors.black.withOpacity(0.35)
-              : (accentColor?.withOpacity(0.08) ?? Colors.black.withOpacity(0.04)),
-          blurRadius: 16,
+              : (accentColor?.withOpacity(0.08) ?? const Color(0x0A0F172A)),
+          blurRadius: 18,
           offset: const Offset(0, 6),
         ),
       ],
     );
   }
 
-  // Light Theme
+  // Light Theme (DANA Official Vibe)
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       primaryColor: primaryBlue,
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: bgLight,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryBlue,
         brightness: Brightness.light,
         primary: primaryBlue,
         secondary: accentCyan,
-        surface: Colors.white,
+        surface: cardLight,
         error: accentRed,
       ),
       textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.light().textTheme),
       appBarTheme: const AppBarTheme(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF0F172A),
+        backgroundColor: primaryBlue,
+        foregroundColor: Colors.white,
         centerTitle: true,
         titleTextStyle: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w800,
-          color: Color(0xFF0F172A),
-          letterSpacing: -0.3,
+          color: Colors.white,
+          letterSpacing: -0.2,
         ),
       ),
       cardTheme: CardTheme(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          side: const BorderSide(color: borderLight, width: 1),
         ),
-        color: Colors.white,
+        color: cardLight,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 2,
-          shadowColor: primaryBlue.withOpacity(0.3),
+          shadowColor: primaryBlue.withOpacity(0.35),
           backgroundColor: primaryBlue,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(50),
@@ -90,7 +105,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF1F5F9),
+        fillColor: const Color(0xFFF8FAFD),
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -98,7 +113,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: const BorderSide(color: borderLight),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -113,7 +128,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: accentCyan,
+      primaryColor: primaryBlue,
       scaffoldBackgroundColor: bgDark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryBlue,
@@ -133,7 +148,7 @@ class AppTheme {
           fontSize: 17,
           fontWeight: FontWeight.w800,
           color: Colors.white,
-          letterSpacing: -0.3,
+          letterSpacing: -0.2,
         ),
       ),
       cardTheme: CardTheme(
@@ -146,7 +161,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          elevation: 4,
+          elevation: 3,
           shadowColor: primaryBlue.withOpacity(0.4),
           backgroundColor: primaryBlue,
           foregroundColor: Colors.white,

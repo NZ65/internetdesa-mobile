@@ -58,8 +58,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ];
       navItems = const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard_outlined),
-          activeIcon: Icon(Icons.dashboard_rounded),
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home_rounded),
           label: 'Beranda',
         ),
         BottomNavigationBarItem(
@@ -78,9 +78,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           label: 'Tools',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline_rounded),
-          activeIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
+          icon: Icon(Icons.account_circle_outlined),
+          activeIcon: Icon(Icons.account_circle_rounded),
+          label: 'Saya',
         ),
       ];
     } else if (user.role == 'teknisi') {
@@ -92,8 +92,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ];
       navItems = const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.engineering_outlined),
-          activeIcon: Icon(Icons.engineering_rounded),
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home_rounded),
           label: 'Tugas',
         ),
         BottomNavigationBarItem(
@@ -107,9 +107,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           label: 'Pelanggan',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline_rounded),
-          activeIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
+          icon: Icon(Icons.account_circle_outlined),
+          activeIcon: Icon(Icons.account_circle_rounded),
+          label: 'Saya',
         ),
       ];
     } else {
@@ -121,8 +121,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ];
       navItems = const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.trending_up_rounded),
-          activeIcon: Icon(Icons.trending_up_rounded),
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home_rounded),
           label: 'Beranda',
         ),
         BottomNavigationBarItem(
@@ -131,9 +131,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           label: 'Pasang Baru',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline_rounded),
-          activeIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
+          icon: Icon(Icons.account_circle_outlined),
+          activeIcon: Icon(Icons.account_circle_rounded),
+          label: 'Saya',
         ),
       ];
     }
@@ -147,36 +147,37 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         index: _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF131C2E) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.cardDark : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppTheme.borderDark : const Color(0xFFEDF2F7),
               width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.45 : 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
-              ),
-            ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 60,
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: (idx) => setState(() => _currentIndex = idx),
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              selectedItemColor: isDark ? AppTheme.accentCyan : AppTheme.primaryBlue,
+              selectedItemColor: AppTheme.primaryBlue,
               unselectedItemColor: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-              selectedFontSize: 11.5,
-              unselectedFontSize: 11,
+              selectedFontSize: 11,
+              unselectedFontSize: 10.5,
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
               items: navItems,

@@ -6,8 +6,12 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/sales_provider.dart';
+import '../../widgets/bouncing_button.dart';
+import '../../widgets/dana_header.dart';
+import '../../widgets/dana_hero_card.dart';
+import '../../widgets/dana_service_grid.dart';
+import '../../widgets/dana_banner_carousel.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/stat_card.dart';
 import '../../widgets/status_badge.dart';
 import 'new_registration_screen.dart';
 
@@ -48,6 +52,40 @@ class _SalesDashboardTabState extends State<SalesDashboardTab> {
     }
   }
 
+  void _showInfoDialog(String title, String message, IconData icon) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 13.5, height: 1.4)),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(90, 42),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -56,442 +94,455 @@ class _SalesDashboardTabState extends State<SalesDashboardTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final user = auth.user;
-    final stats = dash.dashboardData?.stats ?? {};
+    final registrations = sales.registrations;
     final packages = sales.packages;
 
+    // Fee Rp 50.000 per customer registered
+    final estimatedFee = registrations.length * 50000;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Color(0xFF6366F1),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Sales & Pemasaran (${user?.areaName ?? "W3"})',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Segarkan',
-            onPressed: _loadData,
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final res = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
-          );
-          if (res == true) _loadData();
-        },
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('Pasang Baru', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF4338CA),
-        foregroundColor: Colors.white,
-        elevation: 6,
-      ),
+      backgroundColor: isDark ? AppTheme.bgDark : AppTheme.bgLight,
       body: RefreshIndicator(
         onRefresh: () async => _loadData(),
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          children: [
-            // ==========================================
-            // 1. SALES HERO BANNER
-            // ==========================================
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4338CA), Color(0xFF6366F1)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4338CA).withOpacity(0.35),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Row(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              // ==========================================
+              // 1. DANA HEADER & HERO SALES CARD
+              // ==========================================
+              Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  DanaHeader(
+                    title: 'Halo, ${user?.name ?? user?.username ?? "Sales"}',
+                    subtitle: 'Area: ${user?.areaName ?? "Sukorejo & Sekitarnya"}',
+                    roleBadge: 'Sales Partner',
+                    isConnected: true,
+                    isRefreshing: sales.isLoading,
+                    onRefresh: _loadData,
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 96),
+                    child: DanaHeroCard(
+                      title: 'ESTIMASI KOMISI / FEE IKR',
+                      primaryAmount: _formatCurrency(estimatedFee),
+                      secondaryText: '${registrations.length} Pendaftar',
+                      actions: [
+                        DanaActionItem(
+                          label: 'Pasang Baru',
+                          icon: Icons.person_add_alt_1_rounded,
+                          iconColor: const Color(0xFF00B074),
+                          bgColor: const Color(0xFFE6F9F0),
+                          onTap: () async {
+                            final res = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                            );
+                            if (res == true) _loadData();
+                          },
+                        ),
+                        DanaActionItem(
+                          label: 'Katalog Paket',
+                          icon: Icons.inventory_2_rounded,
+                          iconColor: AppTheme.primaryBlue,
+                          bgColor: AppTheme.primaryLight,
+                          badgeText: '${packages.length}',
+                          onTap: () {
+                            _showInfoDialog(
+                              'Pilihan Paket Internet',
+                              packages.isEmpty
+                                  ? 'Belum ada data paket aktif di server.'
+                                  : packages.map((p) => '• ${p.name}: ${_formatCurrency(p.price)} / bln (${p.speed})').join('\n\n'),
+                              Icons.inventory_2_rounded,
+                            );
+                          },
+                        ),
+                        DanaActionItem(
+                          label: 'Kunci GPS',
+                          icon: Icons.my_location_rounded,
+                          iconColor: const Color(0xFFFF8B00),
+                          bgColor: const Color(0xFFFEF5E7),
+                          onTap: () async {
+                            final res = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                            );
+                            if (res == true) _loadData();
+                          },
+                        ),
+                        DanaActionItem(
+                          label: 'Brosur Promo',
+                          icon: Icons.campaign_rounded,
+                          iconColor: const Color(0xFF7C3AED),
+                          bgColor: const Color(0xFFF3E8FF),
+                          onTap: () {
+                            _showInfoDialog(
+                              'Promo Pemasangan Internet',
+                              'Paket Promo Warga Sukorejo:\n1. 10 Mbps Rp 100.000 / bln\n2. 20 Mbps Rp 150.000 / bln\n3. 30 Mbps Rp 200.000 / bln\nGratis biaya survey dan kabel dropcore awal!',
+                              Icons.campaign_rounded,
+                            );
+                          },
                         ),
                       ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) => const Icon(
-                        Icons.campaign_rounded,
-                        color: Color(0xFF4338CA),
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sales: ${user?.name ?? user?.username}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
+                      footerPills: [
+                        _buildMiniPill(
+                          context,
+                          label: 'Total Calon',
+                          value: '${registrations.length}',
+                          color: AppTheme.primaryBlue,
+                          icon: Icons.people_outline,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Pendaftaran Pelanggan & Ekspansi Fiber',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                        _buildMiniPill(
+                          context,
+                          label: 'Target Bulan',
+                          value: '30 Calon',
+                          color: const Color(0xFFFF8B00),
+                          icon: Icons.flag_outlined,
                         ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.circle, color: Color(0xFFA5B4FC), size: 7),
-                        const SizedBox(width: 5),
-                        Text(
-                          '${sales.registrations.length} INPUT',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
+                        Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                        _buildMiniPill(
+                          context,
+                          label: 'Fee / Pasang',
+                          value: 'Rp 50rb',
+                          color: const Color(0xFF00B074),
+                          icon: Icons.monetization_on_outlined,
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
 
-            const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
-            // ==========================================
-            // 2. STATS OVERVIEW
-            // ==========================================
-            Row(
-              children: [
-                Expanded(
-                  child: StatCard(
-                    title: 'Total Input Sales',
-                    value: '${stats['total_registrations'] ?? sales.registrations.length}',
-                    subtitle: 'Calon pelanggan terdata',
-                    icon: Icons.assignment_turned_in_rounded,
-                    color: const Color(0xFF6366F1),
-                    badgeText: 'LEADS',
-                    badgeColor: const Color(0xFF6366F1),
+              // ==========================================
+              // 2. DANA SERVICE GRID (Menu Sales)
+              // ==========================================
+              DanaServiceGrid(
+                title: 'Alat Pemasaran & Penjualan',
+                items: [
+                  DanaServiceItem(
+                    label: 'Form Pendaftaran',
+                    icon: Icons.app_registration_rounded,
+                    iconColor: const Color(0xFF00B074),
+                    bgColor: const Color(0xFFE6F9F0),
+                    badgeText: 'FORM',
+                    onTap: () async {
+                      final res = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                      );
+                      if (res == true) _loadData();
+                    },
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: StatCard(
-                    title: 'Sukses Terpasang',
-                    value: '${stats['installed_count'] ?? 0}',
-                    subtitle: 'Kabel & ONT aktif di rumah',
-                    icon: Icons.verified_user_rounded,
-                    color: AppTheme.accentGreen,
-                    badgeText: 'AKTIF',
-                    badgeColor: AppTheme.accentGreen,
+                  DanaServiceItem(
+                    label: 'Cek Jalur ODP',
+                    icon: Icons.alt_route_rounded,
+                    iconColor: const Color(0xFF0284C7),
+                    bgColor: const Color(0xFFE0F2FE),
+                    onTap: () {
+                      _showInfoDialog(
+                        'Cek Coverage Area',
+                        'Jaringan kabel fiber optik sudah mencakup seluruh RT/RW di Sukorejo. Maksimal tarikan kabel dropcore rekomendasi: 250 meter dari ODP.',
+                        Icons.alt_route_rounded,
+                      );
+                    },
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 22),
-
-            // ==========================================
-            // 3. PAKET INTERNET TERSEDIA
-            // ==========================================
-            if (packages.isNotEmpty) ...[
-              const Text(
-                'Katalog Paket Broadband Sukorejo',
-                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                  DanaServiceItem(
+                    label: 'Brosur Digital',
+                    icon: Icons.photo_library_rounded,
+                    iconColor: const Color(0xFF7C3AED),
+                    bgColor: const Color(0xFFF3E8FF),
+                    onTap: () {
+                      _showInfoDialog(
+                        'Brosur Digital Sales',
+                        'Materi pamflet dan brosur digital dapat diunduh dari web portal atau diminta ke admin kantor.',
+                        Icons.photo_library_rounded,
+                      );
+                    },
+                  ),
+                  DanaServiceItem(
+                    label: 'Hitung Estimasi',
+                    icon: Icons.calculate_rounded,
+                    iconColor: const Color(0xFFFF8B00),
+                    bgColor: const Color(0xFFFEF5E7),
+                    onTap: () {
+                      _showInfoDialog(
+                        'Kalkulator Pemasangan',
+                        'Biaya pasang baru standar:\n• Dropcore s/d 100m: GRATIS\n• Kelebihan kabel: Rp 1.500 / meter\n• ONT Wi-Fi ZTE/Huawei: Dipinjamkan selama berlangganan.',
+                        Icons.calculate_rounded,
+                      );
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 130,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: packages.length,
-                  itemBuilder: (context, idx) {
-                    final p = packages[idx];
-                    return Container(
-                      width: 220,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFF6366F1).withOpacity(0.25),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+
+              const SizedBox(height: 16),
+
+              // ==========================================
+              // 3. DANA BANNER CAROUSEL
+              // ==========================================
+              DanaBannerCarousel(
+                banners: [
+                  DanaBannerItem(
+                    tag: 'FEE KHUSUS',
+                    title: 'Dapatkan Bonus Tambahan!',
+                    subtitle: 'Capai minimal 25 pelanggan baru dalam satu bulan untuk mendapatkan ekstra reward tunai.',
+                    icon: Icons.stars_rounded,
+                    gradientColors: const [Color(0xFF6366F1), Color(0xFF4338CA)],
+                    onTap: () {},
+                  ),
+                  DanaBannerItem(
+                    tag: 'AUTO SYNC',
+                    title: 'Data Masuk Langsung ke Tim',
+                    subtitle: 'Calon pelanggan yang diinput otomatis masuk antrean teknisi & grup Telegram.',
+                    icon: Icons.sync_alt_rounded,
+                    gradientColors: const [Color(0xFF118EEA), Color(0xFF0073C7)],
+                    onTap: () {},
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // ==========================================
+              // 4. DAFTAR CALON PELANGGAN TERDAFTAR FEED
+              // ==========================================
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.cardDark : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  p.name,
-                                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                              Container(
+                                width: 4,
+                                height: 18,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue,
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF6366F1).withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  p.speedText,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF6366F1)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Antrean Registrasi (${registrations.length})',
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            _formatCurrency(p.price),
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppTheme.accentGreen),
-                          ),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 28,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                final res = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const NewRegistrationScreen(),
-                                  ),
-                                );
-                                if (res == true) _loadData();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4338CA),
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          GestureDetector(
+                            onTap: () async {
+                              final res = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                              );
+                              if (res == true) _loadData();
+                            },
+                            child: const Text(
+                              '+ Tambah Calon',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.primaryBlue,
                               ),
-                              child: const Text('Pilih Paket Ini →', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 22),
-            ],
-
-            // ==========================================
-            // 4. DAFTAR ANTREAN PASANG BARU
-            // ==========================================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Riwayat Calon Pelanggan Anda',
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
-                ),
-                Text(
-                  '${sales.registrations.length} Data',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF6366F1),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            if (sales.isLoading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (sales.registrations.isEmpty)
-              const EmptyState(
-                icon: Icons.person_add_disabled_rounded,
-                title: 'Belum Ada Pendaftaran',
-                message: 'Tekan tombol "+ Pasang Baru" untuk mendaftarkan warga baru yang ingin berlangganan WiFi.',
-              )
-            else
-              ...sales.registrations.map((r) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: r.isInstalled
-                          ? AppTheme.accentGreen.withOpacity(0.3)
-                          : const Color(0xFF6366F1).withOpacity(0.25),
-                      width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: r.isInstalled
-                                  ? AppTheme.accentGreen.withOpacity(0.15)
-                                  : const Color(0xFF6366F1).withOpacity(0.15),
-                              radius: 20,
-                              child: Icon(
-                                r.isInstalled ? Icons.check_circle_rounded : Icons.pending_actions_rounded,
-                                color: r.isInstalled ? AppTheme.accentGreen : const Color(0xFF6366F1),
-                                size: 22,
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: isDark ? AppTheme.borderDark : const Color(0xFFF1F5F9),
+                    ),
+
+                    if (sales.isLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (registrations.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(28.0),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.person_add_disabled_rounded, color: Colors.grey, size: 48),
+                              SizedBox(height: 12),
+                              Text(
+                                'Belum Ada Pendaftaran Calon',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    r.name,
-                                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14.5),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                              SizedBox(height: 4),
+                              Text(
+                                'Tekan tombol "+ Tambah Calon" untuk input data baru.',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: registrations.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: isDark ? AppTheme.borderDark : const Color(0xFFF8FAFD),
+                        ),
+                        itemBuilder: (context, idx) {
+                          final reg = registrations[idx];
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8F4FD),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Paket: ${r.packageName ?? "-"}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-                                      fontWeight: FontWeight.w600,
+                                  child: Center(
+                                    child: Text(
+                                      reg.customerName.isNotEmpty ? reg.customerName[0].toUpperCase() : 'C',
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppTheme.primaryBlue,
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            StatusBadge(status: r.status),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        const Divider(height: 1),
-                        const SizedBox(height: 10),
-                        if (r.address != null && r.address!.isNotEmpty) ...[
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF64748B)),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  r.address!,
-                                  style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : const Color(0xFF64748B)),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'WhatsApp: ${r.phone}',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-                                fontFamily: 'monospace',
-                              ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        reg.customerName,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Paket: ${reg.packageName} • Dropcore: ~${reg.estimatedDropcoreMeters}m',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    StatusBadge(status: reg.status),
+                                    const SizedBox(height: 4),
+                                    if (reg.customerPhone.isNotEmpty)
+                                      BouncingButton(
+                                        onTap: () => _openWhatsApp(reg.customerPhone, reg.customerName),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE8F5E9),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.chat_bubble_outline_rounded, size: 11, color: Color(0xFF00B074)),
+                                              SizedBox(width: 3),
+                                              Text('WA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF00B074))),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () => _openWhatsApp(r.phone, r.name),
-                              icon: const Icon(Icons.chat_rounded, size: 14, color: Color(0xFF25D366)),
-                              label: const Text('Hubungi WA', style: TextStyle(fontSize: 11.5, color: Color(0xFF25D366))),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                minimumSize: Size.zero,
-                                side: const BorderSide(color: Color(0xFF25D366)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            const SizedBox(height: 70), // padding for FAB
-          ],
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMiniPill(BuildContext context, {
+    required String label,
+    required String value,
+    required Color color,
+    required IconData icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 4),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 10.5,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }
