@@ -362,13 +362,13 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                   ),
               ],
             ),
-            if (!_isDownloading) ...[
+            if (!_isDownloading && _errorMessage != null && !_downloadComplete) ...[
               const SizedBox(height: 8),
               Center(
                 child: TextButton.icon(
                   onPressed: _openInBrowser,
                   icon: const Icon(Icons.open_in_browser_rounded, size: 14, color: AppTheme.primaryBlue),
-                  label: const Text('Atau unduh manual via Browser', style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue)),
+                  label: const Text('Jika kendala berlanjut, unduh manual via Browser', style: TextStyle(fontSize: 11, color: AppTheme.primaryBlue)),
                 ),
               ),
             ],

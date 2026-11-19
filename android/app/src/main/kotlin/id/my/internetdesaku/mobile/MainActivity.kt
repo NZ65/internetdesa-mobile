@@ -43,16 +43,26 @@ class MainActivity: FlutterActivity() {
                                     return@setMethodCallHandler
                                 }
 
+                                val apkUri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    FileProvider.getUriForFile(applicationContext, "$packageName.fileprovider", file)
+                                } else {
+                                    Uri.fromFile(file)
+                                }
+
                                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                                    val uri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                        FileProvider.getUriForFile(applicationContext, "$packageName.fileprovider", file)
-                                    } else {
-                                        Uri.fromFile(file)
-                                    }
-                                    setDataAndType(uri, "application/vnd.android.package-archive")
+                                    setDataAndType(apkUri, "application/vnd.android.package-archive")
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 }
+
+                                // Explicitly grant read URI permissions to any matching package installer
+                                val resolveInfoList = packageManager.queryIntentActivities(intent, 0)
+                                for (resolveInfo in resolveInfoList) {
+                                    val targetPackage = resolveInfo.activityInfo.packageName
+                                    grantUriPermission(targetPackage, apkUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+
                                 startActivity(intent)
                                 result.success(true)
                             } catch (e: Exception) {

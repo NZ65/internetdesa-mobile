@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.5.3: Karakter anime Desa-chan interaktif (bisa disentuh & dialog responsif), animasi pembuka aplikasi, nada dering alarm & getar darurat LOS, saldo kas riil tersisa, filter & kartu belum bayar (unpaid) lengkap dengan pengingat WA & catat bayar langsung, serta perbaikan menyeluruh menu diagnostik." \
+            -F "changelog=Update v1.5.4: Optimasi in-app APK installer langsung tanpa Chrome, perbaikan package visibility MIME APK, dan explicit URI permission grants untuk instalasi mulus di semua perangkat Android." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."
