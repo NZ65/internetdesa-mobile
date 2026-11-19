@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/app_config.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/notification_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/update_service.dart';
 import '../../widgets/bouncing_button.dart';
@@ -382,6 +383,23 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Pembaruan Aplikasi OTA',
                   subtitle: 'Versi ${AppConfig.appVersion} • Periksa Versi Terbaru',
                   onTap: () => UpdateService.checkForUpdates(context, silent: false),
+                ),
+                const Divider(height: 1, indent: 64),
+                _buildListTile(
+                  context,
+                  icon: Icons.notifications_active_rounded,
+                  iconColor: AppTheme.accentRed,
+                  bgColor: AppTheme.pastelRed,
+                  title: 'Uji Nada Alarm & Getar Notifikasi',
+                  subtitle: 'Tes bunyi sirine darurat LOS & getaran di HP',
+                  onTap: () async {
+                    await NotificationService.testNotificationSound();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Notifikasi alarm darurat bersuara dikirim ke HP.')),
+                      );
+                    }
+                  },
                 ),
                 const Divider(height: 1, indent: 64),
                 _buildListTile(

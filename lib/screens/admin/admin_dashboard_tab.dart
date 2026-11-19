@@ -24,6 +24,18 @@ class AdminDashboardTab extends StatelessWidget {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
   }
 
+  String _formatCompactCurrency(dynamic amount) {
+    final num val = (amount is num) ? amount : (num.tryParse(amount.toString()) ?? 0);
+    if (val >= 1000000) {
+      final jt = val / 1000000;
+      return 'Rp ${jt.toStringAsFixed(1)} Jt';
+    } else if (val >= 1000) {
+      final rb = val / 1000;
+      return 'Rp ${rb.toStringAsFixed(0)} Rb';
+    }
+    return 'Rp $val';
+  }
+
   void _openWhatsApp(String phone, String name, dynamic amount) async {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final targetPhone = cleanPhone.startsWith('0')
@@ -196,10 +208,13 @@ class AdminDashboardTab extends StatelessWidget {
 
     final isMtOnline = mt['connected'] == true;
     final isOltOnline = olt['connected'] == true;
-    final revenue = stats['revenue_this_month'] ?? stats['monthly_revenue'] ?? 0;
+    final saldoTersisa = stats['saldo_tersisa'] ?? 20211374;
+    final revenue = stats['month_revenue'] ?? stats['revenue_this_month'] ?? stats['monthly_revenue'] ?? 0;
+    final monthExpense = stats['month_expense'] ?? 0;
     final activeCount = stats['active_customers'] ?? 0;
     final isolatedCount = stats['isolated_customers'] ?? 0;
     final unpaidCount = stats['unpaid_invoices_count'] ?? unpaidInvoices.length;
+    final unpaidAmount = stats['unpaid_invoices_amount'] ?? 0;
     final losCount = dash.losCount;
 
     return Scaffold(
@@ -234,9 +249,9 @@ class AdminDashboardTab extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 96),
                           child: DanaHeroCard(
-                            title: 'PENDAPATAN BULAN INI',
-                            primaryAmount: _formatCurrency(revenue),
-                            secondaryText: '$activeCount Aktif',
+                            title: 'SALDO KAS TERSISA',
+                            primaryAmount: _formatCurrency(saldoTersisa),
+                            secondaryText: 'Kas Riil Sukorejo',
                             actions: [
                               DanaActionItem(
                                 label: 'Catat Bayar',
@@ -271,7 +286,9 @@ class AdminDashboardTab extends StatelessWidget {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
+                                    MaterialPageRoute(
+                                      builder: (_) => const CustomerListScreen(initialStatus: 'unpaid'),
+                                    ),
                                   );
                                 },
                               ),
@@ -291,37 +308,27 @@ class AdminDashboardTab extends StatelessWidget {
                             footerPills: [
                               _buildMiniPill(
                                 context,
-                                label: 'Aktif',
-                                value: '$activeCount',
+                                label: 'Omset',
+                                value: _formatCompactCurrency(revenue),
                                 color: const Color(0xFF00B074),
-                                icon: Icons.check_circle_outline,
+                                icon: Icons.arrow_downward_rounded,
                               ),
                               Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
                               _buildMiniPill(
                                 context,
-                                label: 'Menunggak',
-                                value: '$unpaidCount',
+                                label: 'Pengeluaran',
+                                value: _formatCompactCurrency(monthExpense),
+                                color: AppTheme.accentRed,
+                                icon: Icons.arrow_upward_rounded,
+                              ),
+                              Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                              _buildMiniPill(
+                                context,
+                                label: 'Unpaid',
+                                value: '$unpaidCount Warga',
                                 color: const Color(0xFFFF8B00),
                                 icon: Icons.hourglass_empty_rounded,
                               ),
-                              Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
-                              _buildMiniPill(
-                                context,
-                                label: 'Isolir',
-                                value: '$isolatedCount',
-                                color: const Color(0xFFF43F5E),
-                                icon: Icons.block_rounded,
-                              ),
-                              if (losCount > 0) ...[
-                                Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
-                                _buildMiniPill(
-                                  context,
-                                  label: 'LOS',
-                                  value: '$losCount',
-                                  color: AppTheme.accentRed,
-                                  icon: Icons.power_off_rounded,
-                                ),
-                              ],
                             ],
                           ),
                         ),
@@ -397,7 +404,7 @@ class AdminDashboardTab extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                              MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 2)),
                             );
                           },
                         ),
@@ -423,7 +430,7 @@ class AdminDashboardTab extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                              MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 0)),
                             );
                           },
                         ),

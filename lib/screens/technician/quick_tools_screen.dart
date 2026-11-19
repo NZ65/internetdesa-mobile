@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../config/theme.dart';
 import '../../models/customer_model.dart';
 import '../../providers/customer_provider.dart';
 import '../../providers/ticket_provider.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/empty_state.dart';
 
 class QuickToolsScreen extends StatefulWidget {
-  const QuickToolsScreen({super.key});
+  final int initialIndex;
+
+  const QuickToolsScreen({super.key, this.initialIndex = 0});
 
   @override
   State<QuickToolsScreen> createState() => _QuickToolsScreenState();
@@ -35,7 +39,11 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: (widget.initialIndex >= 0 && widget.initialIndex < 3) ? widget.initialIndex : 0,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<TicketProvider>(context, listen: false).fetchToolsOverview();
     });
@@ -54,6 +62,101 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  void _showInternalAccessDialog(String title, String url, String description) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.router_rounded, color: AppTheme.primaryBlue),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link_rounded, size: 16, color: AppTheme.primaryBlue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      url,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'monospace', fontSize: 13),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded, size: 16, color: AppTheme.primaryBlue),
+                    tooltip: 'Salin URL',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: url));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Alamat URL berhasil disalin.')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 12.5, height: 1.4, color: Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF7ED),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.accentOrange.withOpacity(0.3)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.wifi_rounded, size: 16, color: AppTheme.accentOrange),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Halaman ini berada di jaringan internal (LAN). Pastikan HP terhubung ke Wi-Fi NOC / MikroTik Sukorejo atau menggunakan VPN WireGuard.',
+                      style: TextStyle(fontSize: 11, color: AppTheme.accentOrange, fontWeight: FontWeight.w600, height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _openUrl(url);
+            },
+            icon: const Icon(Icons.open_in_browser_rounded, size: 16),
+            label: const Text('Buka di Browser'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _searchCustomer() async {
@@ -355,7 +458,11 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _openUrl(mt['webfig_url'] ?? 'http://10.10.10.4'),
+                              onPressed: () => _showInternalAccessDialog(
+                                'WebFig MikroTik Router Core',
+                                mt['webfig_url'] ?? 'http://10.10.10.4',
+                                'Antarmuka manajemen MikroTik Core Router Sukorejo.',
+                              ),
                               icon: const Icon(Icons.open_in_browser, size: 16),
                               label: const Text('Buka WebFig'),
                               style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),
@@ -383,6 +490,7 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
@@ -391,7 +499,7 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                               controller: _pingTargetController,
                               decoration: const InputDecoration(
                                 labelText: 'Target IP / Hostname',
-                                hintText: 'Contoh: 10.30.15.247 / 8.8.8.8',
+                                hintText: 'Contoh: 10.10.10.4 / 8.8.8.8',
                                 prefixIcon: Icon(Icons.network_ping),
                               ),
                             ),
@@ -410,6 +518,48 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                           ),
                         ],
                       ),
+                      const SizedBox(height: 10),
+
+                      // Quick preset targets
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          ActionChip(
+                            avatar: const Icon(Icons.dns_rounded, size: 13, color: AppTheme.primaryBlue),
+                            label: const Text('Google (8.8.8.8)', style: TextStyle(fontSize: 11)),
+                            onPressed: () {
+                              _pingTargetController.text = '8.8.8.8';
+                              _runPingTest();
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.bolt_rounded, size: 13, color: AppTheme.accentCyan),
+                            label: const Text('Cloudflare (1.1.1.1)', style: TextStyle(fontSize: 11)),
+                            onPressed: () {
+                              _pingTargetController.text = '1.1.1.1';
+                              _runPingTest();
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.router_rounded, size: 13, color: AppTheme.accentOrange),
+                            label: const Text('Core (10.10.10.4)', style: TextStyle(fontSize: 11)),
+                            onPressed: () {
+                              _pingTargetController.text = '10.10.10.4';
+                              _runPingTest();
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.settings_input_antenna, size: 13, color: AppTheme.accentGreen),
+                            label: const Text('OLT (192.168.3.100)', style: TextStyle(fontSize: 11)),
+                            onPressed: () {
+                              _pingTargetController.text = '192.168.3.100';
+                              _runPingTest();
+                            },
+                          ),
+                        ],
+                      ),
+
                       if (_pingResult != null) ...[
                         const SizedBox(height: 14),
                         Container(
@@ -456,6 +606,39 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                         ),
                       ],
                     ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              const Text('Uji Notifikasi Suara', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+
+              // Test notification sound card
+              Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.accentRed.withOpacity(0.15),
+                    child: const Icon(Icons.notifications_active_rounded, color: AppTheme.accentRed, size: 22),
+                  ),
+                  title: const Text('Tes Nada Dering & Getar Alarm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                  subtitle: const Text('Bunyikan alarm darurat LOS untuk menguji speaker HP', style: TextStyle(fontSize: 11.5)),
+                  trailing: ElevatedButton(
+                    onPressed: () async {
+                      await NotificationService.testNotificationSound();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Notifikasi alarm darurat bersuara dikirim ke HP.')),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentRed,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(80, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    child: const Text('Bunyikan'),
                   ),
                 ),
               ),
@@ -536,7 +719,11 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _openUrl(olt['webgui_url'] ?? 'http://192.168.3.100'),
+                              onPressed: () => _showInternalAccessDialog(
+                                'WebGUI OLT C-Data FD1602S',
+                                olt['webgui_url'] ?? 'http://192.168.3.100',
+                                'Antarmuka konfigurasi OLT Optik C-Data FD1602S Sukorejo.',
+                              ),
                               icon: const Icon(Icons.open_in_browser, size: 16),
                               label: const Text('Buka WebGUI OLT'),
                               style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),

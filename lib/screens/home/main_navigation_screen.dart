@@ -23,16 +23,66 @@ class MainNavigationScreen extends StatefulWidget {
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends State<MainNavigationScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  late AnimationController _welcomeController;
+  late Animation<Offset> _welcomeSlideAnimation;
+  late Animation<double> _welcomeFadeAnimation;
+  bool _showWelcomeBanner = true;
 
   @override
   void initState() {
     super.initState();
+    // Launch Welcome Animation
+    _welcomeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _welcomeSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, -1.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _welcomeController,
+      curve: Curves.easeOutBack,
+    ));
+
+    _welcomeFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<DashboardProvider>(context, listen: false).fetchDashboard();
       UpdateService.checkForUpdates(context);
+
+      // Play opening animation
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (mounted) {
+          _welcomeController.forward();
+        }
+      });
+
+      // Auto dismiss welcome banner after 4.5 seconds
+      Future.delayed(const Duration(milliseconds: 4800), () {
+        if (mounted && _showWelcomeBanner) {
+          _dismissWelcomeBanner();
+        }
+      });
     });
+  }
+
+  void _dismissWelcomeBanner() {
+    _welcomeController.reverse().then((_) {
+      if (mounted) {
+        setState(() => _showWelcomeBanner = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _welcomeController.dispose();
+    super.dispose();
   }
 
   void _showDanaActionSheet(BuildContext context, dynamic user) {
@@ -349,9 +399,115 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _currentIndex,
+            children: screens,
+          ),
+
+          // Animated Opening Mascot Welcome Banner
+          if (_showWelcomeBanner)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 14,
+              right: 14,
+              child: SlideTransition(
+                position: _welcomeSlideAnimation,
+                child: FadeTransition(
+                  opacity: _welcomeFadeAnimation,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.35), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 18,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFFE0F2FE),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Image.asset(
+                              'assets/images/mascot_interactive_happy.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/mascot_happy.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.face_rounded, color: AppTheme.primaryBlue),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '✨ Desa-chan siap membantu!',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? Colors.white : AppTheme.primaryDark,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Selamat bertugas ${user?.name ?? user?.username ?? "Tim"}! Operasional Sukorejo aktif lancar.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                                    height: 1.25,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: _dismissWelcomeBanner,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.white12 : const Color(0xFFF1F5F9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 16,
+                                color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: DanaBottomNav(
         currentIndex: _currentIndex,

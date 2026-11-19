@@ -20,6 +20,10 @@ class CustomerModel {
   final String? wifiPassword;
   final String? dropcoreLength;
   final String? onuSn;
+  final int? unpaidInvoicesCount;
+  final int? unpaidAmount;
+  final String? earliestDueDate;
+  final int? unpaidInvoiceId;
 
   CustomerModel({
     required this.id,
@@ -43,11 +47,16 @@ class CustomerModel {
     this.wifiPassword,
     this.dropcoreLength,
     this.onuSn,
+    this.unpaidInvoicesCount,
+    this.unpaidAmount,
+    this.earliestDueDate,
+    this.unpaidInvoiceId,
   });
 
   bool get isIsolated => status == 'isolated' || status == 'suspended';
   bool get isActive => status == 'active';
   bool get isPasangBaru => status == 'pasang_baru' || status == 'pending';
+  bool get isUnpaid => (unpaidInvoicesCount ?? 0) > 0 || status == 'unpaid';
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
@@ -72,6 +81,10 @@ class CustomerModel {
       wifiPassword: json['wifi_password']?.toString(),
       dropcoreLength: json['dropcore_length']?.toString() ?? json['dropcore']?.toString(),
       onuSn: json['onu_sn']?.toString() ?? json['modem_sn']?.toString() ?? json['sn']?.toString(),
+      unpaidInvoicesCount: json['unpaid_invoices_count'] != null ? int.tryParse(json['unpaid_invoices_count'].toString()) : null,
+      unpaidAmount: json['unpaid_amount'] != null ? int.tryParse(json['unpaid_amount'].toString()) : null,
+      earliestDueDate: json['earliest_due_date']?.toString(),
+      unpaidInvoiceId: json['unpaid_invoice_id'] != null ? int.tryParse(json['unpaid_invoice_id'].toString()) : null,
     );
   }
 }

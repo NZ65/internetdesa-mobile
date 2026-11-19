@@ -11,6 +11,7 @@ class CustomerProvider extends ChangeNotifier {
   List<CustomerModel> _customers = [];
   List<PackageModel> _packages = [];
   int _pendingCount = 0;
+  int _unpaidCount = 0;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -21,6 +22,7 @@ class CustomerProvider extends ChangeNotifier {
   List<CustomerModel> get customers => _customers;
   List<PackageModel> get packages => _packages;
   int get pendingCount => _pendingCount;
+  int get unpaidCount => _unpaidCount;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -59,6 +61,9 @@ class CustomerProvider extends ChangeNotifier {
         _customers = list;
         if (response.data['data']['pending_count'] != null) {
           _pendingCount = int.tryParse(response.data['data']['pending_count'].toString()) ?? 0;
+        }
+        if (response.data['data']['unpaid_count'] != null) {
+          _unpaidCount = int.tryParse(response.data['data']['unpaid_count'].toString()) ?? 0;
         }
       } else {
         _errorMessage = response.data['message'];

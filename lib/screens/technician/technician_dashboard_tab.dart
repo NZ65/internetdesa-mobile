@@ -365,7 +365,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 0)),
                       );
                     },
                   ),
@@ -375,7 +375,12 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     iconColor: AppTheme.accentRed,
                     bgColor: AppTheme.pastelRed,
                     badgeText: losCount > 0 ? '$losCount LOS' : null,
-                    onTap: () => _showLosDetailDialog(context, dash.losItems),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 1)),
+                      );
+                    },
                   ),
                   DanaServiceItem(
                     label: 'Ganti Wi-Fi',
@@ -385,7 +390,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 2)),
                       );
                     },
                   ),
@@ -397,7 +402,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 2)),
                       );
                     },
                   ),
@@ -422,7 +427,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 0)),
                       );
                     },
                   ),
@@ -434,7 +439,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 2)),
                       );
                     },
                   ),

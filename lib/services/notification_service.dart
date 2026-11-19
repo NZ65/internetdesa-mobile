@@ -9,13 +9,13 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   static bool _isInitialized = false;
 
-  static const String channelLosId = 'los_alerts_channel_v2';
-  static const String channelLosName = '🚨 Peringatan Pelanggan LOS (Kabel Putus)';
-  static const String channelLosDesc = 'Notifikasi darurat bila terdeteksi kabel fiber optik pelanggan terputus atau hilang sinyal.';
+  static const String channelLosId = 'los_emergency_alarm_v3';
+  static const String channelLosName = '🚨 Alarm Darurat Pelanggan LOS (Kabel Putus)';
+  static const String channelLosDesc = 'Notifikasi prioritas tertinggi bersuara lantang & bergetar saat kabel optik pelanggan terputus.';
 
-  static const String channelGeneralId = 'general_alerts_channel_v2';
-  static const String channelGeneralName = 'Notifikasi & Info Internet Desa';
-  static const String channelGeneralDesc = 'Pemberitahuan tiket gangguan, pembayaran tagihan, dan operasional jaringan.';
+  static const String channelGeneralId = 'general_alerts_channel_v3';
+  static const String channelGeneralName = 'Pemberitahuan Internet Desa';
+  static const String channelGeneralDesc = 'Pemberitahuan tiket gangguan, konfirmasi pembayaran, dan operasional jaringan.';
 
   static Future<void> init() async {
     if (_isInitialized) return;
@@ -39,16 +39,18 @@ class NotificationService {
         // Request runtime permission for Android 13+
         await androidImplementation.requestNotificationsPermission();
 
-        // 1. High Priority LOS Channel
+        // 1. High Priority LOS Channel with explicit ringtone sound & strong vibration pattern
         await androidImplementation.createNotificationChannel(
-          const AndroidNotificationChannel(
+          AndroidNotificationChannel(
             channelLosId,
             channelLosName,
             description: channelLosDesc,
             importance: Importance.max,
             playSound: true,
             enableVibration: true,
+            vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 800]),
             enableLights: true,
+            audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
           ),
         );
 
@@ -60,6 +62,8 @@ class NotificationService {
             description: channelGeneralDesc,
             importance: Importance.high,
             playSound: true,
+            enableVibration: true,
+            audioAttributesUsage: AudioAttributesUsage.notification,
           ),
         );
       }
@@ -78,21 +82,23 @@ class NotificationService {
     int? notificationId,
   }) async {
     try {
-      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         channelLosId,
         channelLosName,
         channelDescription: channelLosDesc,
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
         showWhen: true,
         enableLights: true,
         enableVibration: true,
+        vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 800]),
         playSound: true,
+        audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
         category: AndroidNotificationCategory.alarm,
-        styleInformation: BigTextStyleInformation(''),
+        styleInformation: const BigTextStyleInformation(''),
       );
 
-      const NotificationDetails platformDetails = NotificationDetails(
+      final NotificationDetails platformDetails = NotificationDetails(
         android: androidDetails,
       );
 
@@ -116,16 +122,19 @@ class NotificationService {
     int? notificationId,
   }) async {
     try {
-      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         channelGeneralId,
         channelGeneralName,
         channelDescription: channelGeneralDesc,
         importance: Importance.high,
         priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        audioAttributesUsage: AudioAttributesUsage.notification,
         showWhen: true,
       );
 
-      const NotificationDetails platformDetails = NotificationDetails(
+      final NotificationDetails platformDetails = NotificationDetails(
         android: androidDetails,
       );
 
@@ -139,5 +148,14 @@ class NotificationService {
     } catch (e) {
       debugPrint('Error showing general notification: $e');
     }
+  }
+
+  /// Uji nada dering & getar notifikasi dari aplikasi
+  static Future<void> testNotificationSound() async {
+    await showLosNotification(
+      customerName: 'Uji Coba Alarm Suara',
+      detail: 'Nada dering peringatan darurat & getaran bekerja sempurna!',
+      notificationId: 99999,
+    );
   }
 }
