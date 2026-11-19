@@ -11,6 +11,15 @@ class UpdateService {
   static bool _hasChecked = false;
   static const MethodChannel _channel = MethodChannel('id.my.internetdesaku.mobile/updater');
 
+  /// Get guaranteed safe cache path for APK update download
+  static Future<String> getInstallPath() async {
+    try {
+      final path = await _channel.invokeMethod<String>('getInstallPath');
+      if (path != null && path.isNotEmpty) return path;
+    } catch (_) {}
+    return '${Directory.systemTemp.path}/internetdesa_update.apk';
+  }
+
   /// Checks for application updates from the server and shows prompt if available
   static Future<void> checkForUpdates(BuildContext context, {bool silent = true}) async {
     if (silent && _hasChecked) return;
@@ -66,13 +75,16 @@ class UpdateService {
   }
 
   /// Installs downloaded APK via native MethodChannel
-  static Future<bool> installApk(String filePath) async {
+  static Future<Map<String, dynamic>> installApk(String filePath) async {
     try {
       final res = await _channel.invokeMethod<bool>('installApk', {'filePath': filePath});
-      return res ?? false;
+      return {'success': res ?? false, 'message': 'Membuka pemasang paket Android'};
+    } on PlatformException catch (pe) {
+      debugPrint('Error invoking installApk: ${pe.code} - ${pe.message}');
+      return {'success': false, 'code': pe.code, 'message': pe.message ?? 'Gagal membuka penginstal paket'};
     } catch (e) {
       debugPrint('Error invoking installApk: $e');
-      return false;
+      return {'success': false, 'message': e.toString()};
     }
   }
 }
@@ -98,6 +110,8 @@ class _UpdateDialog extends StatefulWidget {
 
 class _UpdateDialogState extends State<_UpdateDialog> {
   bool _isDownloading = false;
+  bool _downloadComplete = false;
+  String? _downloadedFilePath;
   double _progress = 0.0;
   String _statusText = '';
   String? _errorMessage;
@@ -105,14 +119,14 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   void _startInAppDownload() async {
     setState(() {
       _isDownloading = true;
+      _downloadComplete = false;
       _progress = 0.0;
       _statusText = 'Menghubungkan ke server...';
       _errorMessage = null;
     });
 
     try {
-      final tempDir = Directory.systemTemp;
-      final savePath = '${tempDir.path}/internetdesa_update.apk';
+      final savePath = await UpdateService.getInstallPath();
       final file = File(savePath);
       if (file.existsSync()) {
         try { file.deleteSync(); } catch (_) {}
@@ -137,15 +151,14 @@ class _UpdateDialogState extends State<_UpdateDialog> {
 
       if (mounted) {
         setState(() {
-          _statusText = 'Membuka pemasang aplikasi...';
+          _isDownloading = false;
+          _downloadComplete = true;
+          _downloadedFilePath = savePath;
+          _statusText = 'Unduhan selesai! Membuka installer...';
         });
       }
 
-      final ok = await UpdateService.installApk(savePath);
-      if (!ok && mounted) {
-        // Fallback to browser launch if native package manager intent had issue
-        _openInBrowser();
-      }
+      _installDownloadedApk(savePath);
     } catch (e) {
       debugPrint('Download error: $e');
       if (mounted) {
@@ -154,6 +167,23 @@ class _UpdateDialogState extends State<_UpdateDialog> {
           _errorMessage = 'Gagal mengunduh langsung: $e';
         });
       }
+    }
+  }
+
+  void _installDownloadedApk(String path) async {
+    final result = await UpdateService.installApk(path);
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      // Installer launched successfully
+    } else {
+      final code = result['code'];
+      final msg = result['message'] ?? 'Gagal memasang APK';
+      setState(() {
+        _errorMessage = (code == 'NEED_PERMISSION')
+            ? 'Izin instalasi dari sumber ini diperlukan. Silakan aktifkan izin pada layar pengaturan, lalu tekan tombol "Pasang Sekarang" di bawah.'
+            : msg;
+      });
     }
   }
 
@@ -199,7 +229,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                     color: AppTheme.primaryBlue.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.system_update_rounded, color: AppTheme.primaryBlue, size: 26),
+                  child: const Icon(
+                    Icons.system_update_rounded,
+                    color: AppTheme.primaryBlue,
+                    size: 26,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -252,13 +286,14 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(Icons.error_outline_rounded, color: AppTheme.accentRed, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(fontSize: 11.5, color: AppTheme.accentRed),
+                        style: const TextStyle(fontSize: 11.5, color: AppTheme.accentRed, height: 1.3),
                       ),
                     ),
                   ],
@@ -281,7 +316,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Mengunduh pembaruan...', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  const Text('Mengunduh langsung di aplikasi...', style: TextStyle(fontSize: 11, color: Colors.grey)),
                   Text(
                     _statusText,
                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppTheme.accentGreen),
@@ -300,13 +335,26 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                     child: const Text('Nanti', style: TextStyle(color: Colors.grey)),
                   ),
                 const SizedBox(width: 8),
-                if (!_isDownloading)
+
+                if (_downloadComplete && _downloadedFilePath != null)
+                  ElevatedButton.icon(
+                    onPressed: () => _installDownloadedApk(_downloadedFilePath!),
+                    icon: const Icon(Icons.install_mobile_rounded, size: 18),
+                    label: const Text('Pasang Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  )
+                else if (!_isDownloading)
                   ElevatedButton.icon(
                     onPressed: _startInAppDownload,
                     icon: const Icon(Icons.download_for_offline_rounded, size: 18),
                     label: const Text('Update Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentGreen,
+                      backgroundColor: AppTheme.primaryBlue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

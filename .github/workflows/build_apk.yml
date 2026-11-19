@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.5.1: Fitur Edit & Hapus Pelanggan langsung dari Detail Pelanggan, integrasi paket & sync MikroTik otomatis, notifikasi popup tagihan & rincian ODP, serta penyempurnaan UI ala dompet digital DANA." \
+            -F "changelog=Update v1.5.2: In-App Direct APK Installer (langsung unduh & pasang di dalam aplikasi tanpa membuka Chrome), perbaikan sinkronisasi versi aplikasi, serta peningkatan kompatibilitas Android 11-14." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."
