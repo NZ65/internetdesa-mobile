@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../models/customer_model.dart';
 import '../models/invoice_model.dart';
+import '../models/registration_model.dart';
 import '../services/api_service.dart';
 
 class CustomerProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
 
   List<CustomerModel> _customers = [];
+  List<PackageModel> _packages = [];
   int _pendingCount = 0;
   bool _isLoading = false;
   String? _errorMessage;
@@ -17,6 +19,7 @@ class CustomerProvider extends ChangeNotifier {
   bool _isLoadingDetail = false;
 
   List<CustomerModel> get customers => _customers;
+  List<PackageModel> get packages => _packages;
   int get pendingCount => _pendingCount;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -24,6 +27,18 @@ class CustomerProvider extends ChangeNotifier {
   CustomerModel? get selectedCustomer => _selectedCustomer;
   List<InvoiceModel> get selectedCustomerInvoices => _selectedCustomerInvoices;
   bool get isLoadingDetail => _isLoadingDetail;
+
+  Future<void> fetchPackages() async {
+    try {
+      final response = await _api.get('/packages');
+      if (response.data['success'] == true) {
+        _packages = (response.data['data'] as List)
+            .map((e) => PackageModel.fromJson(e))
+            .toList();
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
 
   Future<void> fetchCustomers({String search = '', String status = 'all'}) async {
     _isLoading = true;
@@ -78,5 +93,56 @@ class CustomerProvider extends ChangeNotifier {
 
     _isLoadingDetail = false;
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> updateCustomer({
+    required int id,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      final response = await _api.post('${AppConfig.epCustomers}/$id/update', data: data);
+      if (response.data['success'] == true) {
+        if (response.data['data'] != null) {
+          _selectedCustomer = CustomerModel.fromJson(response.data['data']);
+        }
+        notifyListeners();
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Data pelanggan berhasil diperbarui.',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal memperbarui data.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteCustomer(int id) async {
+    try {
+      final response = await _api.post('${AppConfig.epCustomers}/$id/delete');
+      if (response.data['success'] == true) {
+        _customers.removeWhere((c) => c.id == id);
+        notifyListeners();
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Pelanggan berhasil dihapus.',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal menghapus pelanggan.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
   }
 }

@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Transformasi Desain DANA Style: Logo baru resmi Internet Desa, layout kartu ala dompet digital DANA, animasi interaktif sentuh (bouncing cards), banner promo berjalan, dan header biru cerah terpadu." \
+            -F "changelog=Update v1.5.1: Fitur Edit & Hapus Pelanggan langsung dari Detail Pelanggan, integrasi paket & sync MikroTik otomatis, notifikasi popup tagihan & rincian ODP, serta penyempurnaan UI ala dompet digital DANA." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

@@ -163,16 +163,17 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(20),
-                                  onTap: () {
+                                  onTap: () async {
                                     if (isPasang) {
                                       _showPasangBaruDialog(context, c);
                                     } else {
-                                      Navigator.push(
+                                      await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => CustomerDetailScreen(customerId: c.id),
                                         ),
                                       );
+                                      _loadCustomers();
                                     }
                                   },
                                   child: Padding(

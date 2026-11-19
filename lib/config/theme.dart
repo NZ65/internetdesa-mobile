@@ -6,6 +6,7 @@ class AppTheme {
   // DANA Signature Brand Colors
   // ==========================================
   static const Color primaryBlue = Color(0xFF118EEA);      // Official DANA Cerulean Blue
+  static const Color danaPrimaryBlue = Color(0xFF118EEA);  // Alias
   static const Color primaryDark = Color(0xFF0C75C2);      // Deep DANA Blue
   static const Color primaryLight = Color(0xFFE8F4FD);     // Ultra Soft Blue Surface
   static const Color accentCyan = Color(0xFF00B4D8);       // Sky Cyan
