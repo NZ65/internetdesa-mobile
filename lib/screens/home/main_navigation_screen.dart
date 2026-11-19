@@ -215,14 +215,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Single
                 icon: Icons.speed_rounded,
                 iconColor: AppTheme.accentPurple,
                 bgColor: AppTheme.pastelPurple,
-                title: 'Speedtest & Ping Server NOC',
-                subtitle: 'Analisa latensi MikroTik, DNS, & stabilitas koneksi',
-                onTap: () {
+                title: 'Speedtest Resmi (Ookla Style)',
+                subtitle: 'Uji Download, Upload & Ping langsung ke Core Router NOC',
+                onTap: () async {
                   Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
-                  );
+                  final uri = Uri.parse('${AppConfig.defaultBaseUrl}/speedtest');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
                 },
               ),
             ],

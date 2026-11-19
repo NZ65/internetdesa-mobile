@@ -424,11 +424,11 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     icon: Icons.speed_rounded,
                     iconColor: AppTheme.accentCyan,
                     bgColor: AppTheme.pastelCyan,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialIndex: 0)),
-                      );
+                    onTap: () async {
+                      final uri = Uri.parse('${AppConfig.defaultBaseUrl}/speedtest');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
                     },
                   ),
                   DanaServiceItem(
