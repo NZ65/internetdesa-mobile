@@ -36,38 +36,58 @@ class DanaServiceGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Split items into chunks of 4 items per row
+    final List<List<DanaServiceItem>> rows = [];
+    for (int i = 0; i < items.length; i += 4) {
+      rows.add(items.sublist(i, (i + 4 > items.length) ? items.length : i + 4));
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row
+          // Section Title Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppTheme.textPrimary,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
               if (onSeeAll != null)
                 GestureDetector(
@@ -83,86 +103,99 @@ class DanaServiceGrid extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // 4-Column Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 10,
-              childAspectRatio: 0.85,
-            ),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return BouncingButton(
-                onTap: item.onTap,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: isDark ? item.bgColor.withOpacity(0.18) : item.bgColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: item.iconColor.withOpacity(isDark ? 0.35 : 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Icon(
-                            item.icon,
-                            color: item.iconColor,
-                            size: 24,
-                          ),
-                        ),
-                        if (item.badgeText != null)
-                          Positioned(
-                            top: -4,
-                            right: -6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentOrange,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.white, width: 1.2),
-                              ),
-                              child: Text(
-                                item.badgeText!,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.w900,
+          // Responsive Row-based Grid (Zero Text Overflow Guarantee)
+          ...rows.map((rowItems) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(4, (index) {
+                  if (index >= rowItems.length) {
+                    return const Expanded(child: SizedBox.shrink());
+                  }
+                  final item = rowItems[index];
+                  return Expanded(
+                    child: BouncingButton(
+                      onTap: item.onTap,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E293B) : item.bgColor,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: item.iconColor.withOpacity(0.18),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: item.iconColor.withOpacity(isDark ? 0.08 : 0.12),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    item.icon,
+                                    color: item.iconColor,
+                                    size: 24,
+                                  ),
                                 ),
                               ),
-                            ),
+                              if (item.badgeText != null)
+                                Positioned(
+                                  top: -4,
+                                  right: -4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentRed,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.white, width: 1.5),
+                                    ),
+                                    child: Text(
+                                      item.badgeText!,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                          const SizedBox(height: 8),
+                          Text(
+                            item.label,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? const Color(0xFFE2E8F0) : AppTheme.textPrimary,
+                              height: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  );
+                }),
+              ),
+            );
+          }),
         ],
       ),
     );

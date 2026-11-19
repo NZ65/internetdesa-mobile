@@ -9,11 +9,13 @@ import 'providers/sales_provider.dart';
 import 'providers/ticket_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/main_navigation_screen.dart';
+import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
+  await NotificationService.init();
 
   runApp(
     MultiProvider(

@@ -6,6 +6,7 @@ import '../../models/ticket_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/ticket_provider.dart';
+import '../../widgets/anime_mascot_card.dart';
 import '../../widgets/bouncing_button.dart';
 import '../../widgets/dana_header.dart';
 import '../../widgets/dana_hero_card.dart';
@@ -48,7 +49,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
   void _openWhatsApp(String phone, String name) async {
     final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final target = clean.startsWith('0') ? '62${clean.substring(1)}' : (clean.startsWith('8') ? '62$clean' : clean);
-    final msg = Uri.encodeComponent('Halo Kak $name, saya teknisi Internet Desa Sukorejo. Terkait tiket gangguan internet Anda, saat ini saya sedang menuju ke lokasi...');
+    final msg = Uri.encodeComponent('Halo Kak $name, saya teknisi Internet Desa Sukorejo. Terkait kendala internet Anda, saat ini kami sedang meluncur ke lokasi...');
     final uri = Uri.parse('https://wa.me/$target?text=$msg');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -105,6 +106,115 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
     );
   }
 
+  void _showLosDetailDialog(BuildContext context, List<Map<String, dynamic>> losItems) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          decoration: BoxDecoration(
+            color: isDark ? AppTheme.cardDark : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.pastelRed,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pelanggan LOS / Putus (${losItems.length})',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
+                        const Text(
+                          'Kabel optik putus fisik atau modem mati daya (Dying Gasp)',
+                          style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (losItems.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text('🎉 Tidak ada kabel optik yang putus (LOS 0).'),
+                  ),
+                )
+              else
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.55),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: losItems.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (_, idx) {
+                      final item = losItems[idx];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.pastelRed,
+                          child: const Icon(Icons.power_off_rounded, color: AppTheme.accentRed, size: 18),
+                        ),
+                        title: Text(
+                          item['name'] ?? 'Pelanggan #${item['onu_id']}',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                        ),
+                        subtitle: Text(
+                          'Port ${item['port'] ?? "-"} | Daya: ${item['rx_power'] ?? "LOS"} | ${item['down_reason'] ?? "Putus"}',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentRed.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'LOS',
+                            style: TextStyle(color: AppTheme.accentRed, fontWeight: FontWeight.bold, fontSize: 10),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -116,6 +226,7 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
     final stats = dash.dashboardData?.stats ?? {};
     final openTickets = ticketProvider.tickets;
     final odpCount = stats['total_odp_count'] ?? 16;
+    final losCount = dash.losCount;
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.bgDark : AppTheme.bgLight,
@@ -133,9 +244,9 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                 children: [
                   DanaHeader(
                     title: 'Halo, ${user?.name ?? user?.username ?? "Teknisi"}',
-                    subtitle: 'Area: ${user?.areaName ?? "W3 Sukorejo"}',
-                    roleBadge: 'Teknisi Siaga',
-                    isConnected: true,
+                    subtitle: losCount > 0 ? '$losCount Pelanggan Kabel Putus (LOS)' : 'Siaga Wilayah Sukorejo',
+                    roleBadge: 'Teknisi Lapangan',
+                    isConnected: losCount == 0,
                     isRefreshing: ticketProvider.isLoading,
                     onRefresh: _loadData,
                   ),
@@ -156,22 +267,18 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                           onTap: () {},
                         ),
                         DanaActionItem(
+                          label: 'Cek LOS',
+                          icon: Icons.cell_tower_rounded,
+                          iconColor: AppTheme.accentRed,
+                          bgColor: AppTheme.pastelRed,
+                          badgeText: losCount > 0 ? '$losCount' : null,
+                          onTap: () => _showLosDetailDialog(context, dash.losItems),
+                        ),
+                        DanaActionItem(
                           label: 'Reboot ONT',
                           icon: Icons.restart_alt_rounded,
                           iconColor: const Color(0xFFFF8B00),
                           bgColor: const Color(0xFFFEF5E7),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
-                            );
-                          },
-                        ),
-                        DanaActionItem(
-                          label: 'Ganti Wi-Fi',
-                          icon: Icons.wifi_password_rounded,
-                          iconColor: const Color(0xFF7C3AED),
-                          bgColor: const Color(0xFFF3E8FF),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -204,29 +311,48 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                         Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
                         _buildMiniPill(
                           context,
-                          label: 'ODP Sukorejo',
+                          label: 'ODP',
                           value: '$odpCount Titik',
                           color: const Color(0xFF00B074),
                           icon: Icons.inventory_2_outlined,
                         ),
-                        Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
-                        _buildMiniPill(
-                          context,
-                          label: 'Status Tim',
-                          value: 'Siaga',
-                          color: AppTheme.primaryBlue,
-                          icon: Icons.verified_user_outlined,
-                        ),
+                        if (losCount > 0) ...[
+                          Container(height: 16, width: 1, color: const Color(0xFFE2E8F0)),
+                          _buildMiniPill(
+                            context,
+                            label: 'LOS',
+                            value: '$losCount',
+                            color: AppTheme.accentRed,
+                            icon: Icons.power_off_rounded,
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // ==========================================
-              // 2. DANA SERVICE GRID (Tools Diagnostik)
+              // 2. ANIME MASCOT COMPANION (Desa-chan)
+              // ==========================================
+              AnimeMascotCard(
+                losCount: losCount,
+                openTicketsCount: openTickets.length,
+                isNocConnected: true,
+                onTapLos: () => _showLosDetailDialog(context, dash.losItems),
+                onTapTickets: () {},
+                onTapPing: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                  );
+                },
+              ),
+
+              // ==========================================
+              // 3. DANA SERVICE GRID (Tools Diagnostik)
               // ==========================================
               DanaServiceGrid(
                 title: 'Alat Cepat & Diagnostik Lapangan',
@@ -244,34 +370,16 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     },
                   ),
                   DanaServiceItem(
-                    label: 'Cek Redaman',
-                    icon: Icons.speed_rounded,
-                    iconColor: const Color(0xFF00B074),
-                    bgColor: const Color(0xFFE6F9F0),
-                    badgeText: 'dBm',
-                    onTap: () {
-                      _showInfoDialog(
-                        'Standar Redaman Fiber',
-                        'Standar normal redaman ONT di rumah pelanggan adalah antara -18 dBm s/d -24 dBm. Redaman di atas -27 dBm perlu perbaikan sambungan / fast connector.',
-                        Icons.speed_rounded,
-                      );
-                    },
+                    label: 'Cek LOS & Redaman',
+                    icon: Icons.cell_tower_rounded,
+                    iconColor: AppTheme.accentRed,
+                    bgColor: AppTheme.pastelRed,
+                    badgeText: losCount > 0 ? '$losCount LOS' : null,
+                    onTap: () => _showLosDetailDialog(context, dash.losItems),
                   ),
                   DanaServiceItem(
-                    label: 'Remote ONT',
-                    icon: Icons.settings_remote_rounded,
-                    iconColor: const Color(0xFFFF8B00),
-                    bgColor: const Color(0xFFFEF5E7),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
-                      );
-                    },
-                  ),
-                  DanaServiceItem(
-                    label: 'Ganti Sandi',
-                    icon: Icons.wifi_lock_rounded,
+                    label: 'Ganti Wi-Fi',
+                    icon: Icons.wifi_password_rounded,
                     iconColor: const Color(0xFF7C3AED),
                     bgColor: const Color(0xFFF3E8FF),
                     onTap: () {
@@ -282,81 +390,86 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                     },
                   ),
                   DanaServiceItem(
-                    label: 'ODP 8-Port',
-                    icon: Icons.grid_view_rounded,
-                    iconColor: const Color(0xFFEC4899),
-                    bgColor: const Color(0xFFFCE7F3),
+                    label: 'Kick PPPoE',
+                    icon: Icons.flash_on_rounded,
+                    iconColor: const Color(0xFFEF4444),
+                    bgColor: const Color(0xFFFEE2E2),
                     onTap: () {
-                      _showInfoDialog(
-                        'Manajemen Port ODP',
-                        'Setiap ODP memiliki 8 slot dropcore. Pastikan nomor port dicatat saat pasang baru agar memudahkan maintenance.',
-                        Icons.grid_view_rounded,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
                       );
                     },
                   ),
                   DanaServiceItem(
-                    label: 'Sisa Dropcore',
-                    icon: Icons.cable_rounded,
-                    iconColor: const Color(0xFF0D9488),
-                    bgColor: const Color(0xFFCCFBF1),
+                    label: 'Peta Jalur ODP',
+                    icon: Icons.map_rounded,
+                    iconColor: const Color(0xFF059669),
+                    bgColor: const Color(0xFFD1FAE5),
                     onTap: () {
                       _showInfoDialog(
-                        'Stok Material Dropcore',
-                        'Rekap kabel dropcore dan fast connector tercatat di server. Ajukan penambahan jika sisa haspel di bawah 100m.',
-                        Icons.cable_rounded,
+                        'Peta ODP & Fiber Sukorejo',
+                        'Total 16 ODP terpasang. Tautan maps & koordinat presisi tersedia di web portal.',
+                        Icons.map_rounded,
                       );
                     },
                   ),
                   DanaServiceItem(
-                    label: 'Grup Telegram',
-                    icon: Icons.send_rounded,
-                    iconColor: const Color(0xFF0284C7),
-                    bgColor: const Color(0xFFE0F2FE),
+                    label: 'Speedtest Lapangan',
+                    icon: Icons.speed_rounded,
+                    iconColor: AppTheme.accentCyan,
+                    bgColor: AppTheme.pastelCyan,
                     onTap: () {
-                      _showInfoDialog(
-                        'Notifikasi Bot Telegram',
-                        'Setiap pendaftaran baru dan tiket darurat otomatis dikirim ke grup Telegram teknisi & admin.',
-                        Icons.send_rounded,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
                       );
                     },
                   ),
                   DanaServiceItem(
-                    label: 'Bantuan SOP',
-                    icon: Icons.menu_book_rounded,
-                    iconColor: const Color(0xFF64748B),
-                    bgColor: const Color(0xFFF1F5F9),
+                    label: 'Isolir / Un-isolir',
+                    icon: Icons.lock_reset_rounded,
+                    iconColor: const Color(0xFFD97706),
+                    bgColor: const Color(0xFFFEF3C7),
                     onTap: () {
-                      _showInfoDialog(
-                        'SOP Teknisi Lapangan',
-                        '1. Utamakan K3 & keselamatan tiang listrik.\n2. Verifikasi redaman optik sebelum serah terima.\n3. Uji kecepatan internet minimal 3x.\n4. Ambil foto bukti instalasi selesai.',
-                        Icons.menu_book_rounded,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
                       );
                     },
+                  ),
+                  DanaServiceItem(
+                    label: 'Kontak NOC',
+                    icon: Icons.support_agent_rounded,
+                    iconColor: AppTheme.primaryBlue,
+                    bgColor: AppTheme.primaryLight,
+                    badgeText: '24 Jam',
+                    onTap: () => _callPhone('085226118497'),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ==========================================
-              // 3. DANA BANNER CAROUSEL
+              // 4. BANNER CAROUSEL
               // ==========================================
               DanaBannerCarousel(
                 banners: [
                   DanaBannerItem(
-                    tag: 'K3 LAPANGAN',
-                    title: 'Keselamatan Kerja Nomor 1',
-                    subtitle: 'Gunakan sabuk pengaman, helm proyek, dan periksa tegangan kabel saat naik ke tiang.',
-                    icon: Icons.health_and_safety_rounded,
-                    gradientColors: const [Color(0xFF0F766E), Color(0xFF14B8A6)],
+                    tag: 'SOP TEKNISI',
+                    title: 'Standar Redaman Fiber Optik',
+                    subtitle: 'Pastikan sinyal optik ONT di pelanggan berkisar antara -18 s/d -24 dBm.',
+                    icon: Icons.engineering_rounded,
+                    gradientColors: const [Color(0xFF118EEA), Color(0xFF0C75C2)],
                     onTap: () {},
                   ),
                   DanaBannerItem(
-                    tag: 'STANDAR REDAMAN',
-                    title: 'Target Sinyal Optik',
-                    subtitle: 'Pastikan sinyal di bawah -24 dBm agar pelanggan tidak mengalami loss paket atau RTO.',
-                    icon: Icons.network_check_rounded,
-                    gradientColors: const [Color(0xFF118EEA), Color(0xFF0073C7)],
+                    tag: 'NOTIFIKASI OTOMATIS',
+                    title: 'Auto-Alert Pelanggan LOS',
+                    subtitle: 'Aplikasi kini otomatis memunculkan notifikasi di HP jika kabel optik terputus.',
+                    icon: Icons.notifications_active_rounded,
+                    gradientColors: const [Color(0xFFF43F5E), Color(0xFFE11D48)],
                     onTap: () {},
                   ),
                 ],
@@ -365,22 +478,22 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
               const SizedBox(height: 16),
 
               // ==========================================
-              // 4. DAFTAR TIKET GANGGUAN FEED
+              // 5. DAFTAR TIKET GANGGUAN TERBARU
               // ==========================================
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.cardDark : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
                   border: Border.all(
                     color: isDark ? AppTheme.borderDark : AppTheme.borderLight,
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -396,61 +509,49 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                             children: [
                               Container(
                                 width: 4,
-                                height: 18,
+                                height: 16,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.accentRed,
+                                  color: AppTheme.accentOrange,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Daftar Tiket Gangguan (${openTickets.length})',
+                                'Tiket Menunggu Penanganan (${openTickets.length})',
                                 style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,
-                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  color: isDark ? Colors.white : AppTheme.textPrimary,
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            openTickets.isNotEmpty ? 'Perlu Ditangani' : 'Aman',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: openTickets.isNotEmpty ? AppTheme.accentRed : const Color(0xFF00B074),
-                            ),
-                          ),
                         ],
                       ),
                     ),
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: isDark ? AppTheme.borderDark : const Color(0xFFF1F5F9),
-                    ),
+                    const Divider(height: 1),
 
                     if (ticketProvider.isLoading)
                       const Padding(
-                        padding: EdgeInsets.all(32),
+                        padding: EdgeInsets.symmetric(vertical: 30),
                         child: Center(child: CircularProgressIndicator()),
                       )
                     else if (openTickets.isEmpty)
                       const Padding(
-                        padding: EdgeInsets.all(28.0),
+                        padding: EdgeInsets.symmetric(vertical: 36),
                         child: Center(
                           child: Column(
                             children: [
-                              Icon(Icons.verified_rounded, color: Color(0xFF00B074), size: 48),
-                              SizedBox(height: 12),
+                              Icon(Icons.task_alt_rounded, size: 48, color: Color(0xFF00B074)),
+                              SizedBox(height: 10),
                               Text(
-                                'Semua Jalur Aman & Normal! 🎉',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                'Semua Tiket Selesai!',
+                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Tidak ada antrean gangguan saat ini. Kerja bagus!',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                                'Tidak ada antrean gangguan warga saat ini.',
+                                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                               ),
                             ],
                           ),
@@ -461,147 +562,57 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: openTickets.length,
-                        separatorBuilder: (_, __) => Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: isDark ? AppTheme.borderDark : const Color(0xFFF8FAFD),
-                        ),
+                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 70),
                         itemBuilder: (context, idx) {
-                          final t = openTickets[idx];
-                          final isCritical = t.priority == 'critical';
+                          final ticket = openTickets[idx];
+                          final name = ticket.customerName ?? 'Pelanggan #${ticket.customerId}';
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            child: Column(
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            leading: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppTheme.pastelOrange,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.build_circle_rounded, color: AppTheme.accentOrange, size: 24),
+                              ),
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                            ),
+                            subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: isCritical
-                                            ? const Color(0xFFFFF1F2)
-                                            : const Color(0xFFFEF5E7),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: (isCritical ? AppTheme.accentRed : const Color(0xFFFF8B00)).withOpacity(0.3),
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        isCritical ? Icons.error_rounded : Icons.warning_amber_rounded,
-                                        color: isCritical ? AppTheme.accentRed : const Color(0xFFFF8B00),
-                                        size: 22,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            t.title,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w800,
-                                              color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Pelanggan: ${t.customerName ?? "Umum"}',
-                                            style: TextStyle(
-                                              fontSize: 11.5,
-                                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    StatusBadge(status: t.status),
-                                  ],
+                                const SizedBox(height: 2),
+                                Text(
+                                  ticket.issue,
+                                  style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                if (t.customerAddress != null && t.customerAddress!.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    t.customerAddress!,
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      color: isDark ? Colors.grey[400] : const Color(0xFF475569),
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (ticket.customerPhone != null && ticket.customerPhone!.isNotEmpty)
+                                  IconButton(
+                                    icon: const Icon(Icons.chat_rounded, color: Color(0xFF00B074), size: 20),
+                                    onPressed: () => _openWhatsApp(ticket.customerPhone!, name),
+                                    tooltip: 'Chat WhatsApp',
                                   ),
-                                ],
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    if (t.customerPhone != null && t.customerPhone!.isNotEmpty) ...[
-                                      BouncingButton(
-                                        onTap: () => _openWhatsApp(t.customerPhone!, t.customerName ?? 'Pelanggan'),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE8F5E9),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.chat_bubble_outline_rounded, size: 13, color: Color(0xFF00B074)),
-                                              SizedBox(width: 4),
-                                              Text('WA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF00B074))),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    BouncingButton(
-                                      onTap: () => _openMapRoute(t.latitude, t.longitude, t.customerAddress),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE0F2FE),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.navigation_rounded, size: 13, color: Color(0xFF0284C7)),
-                                            SizedBox(width: 4),
-                                            Text('Rute', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0284C7))),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    BouncingButton(
-                                      onTap: () async {
-                                        final updated = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (_) => TicketDetailScreen(ticket: t)),
-                                        );
-                                        if (updated == true) _loadData();
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primaryBlue,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Text(
-                                          'Tangani',
-                                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF94A3B8), size: 14),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => TicketDetailScreen(ticket: ticket)),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -620,32 +631,33 @@ class _TechnicianDashboardTabState extends State<TechnicianDashboardTab> {
     );
   }
 
-  Widget _buildMiniPill(BuildContext context, {
+  Widget _buildMiniPill(
+    BuildContext context, {
     required String label,
     required String value,
     required Color color,
     required IconData icon,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: color),
+        Icon(icon, size: 14, color: color),
         const SizedBox(width: 4),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 10.5,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-          ),
-        ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: FontWeight.w800,
             color: color,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            color: Color(0xFF64748B),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

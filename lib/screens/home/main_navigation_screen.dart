@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../services/update_service.dart';
+import '../../widgets/dana_bottom_nav.dart';
+import '../../widgets/bouncing_button.dart';
 import '../admin/admin_dashboard_tab.dart';
 import '../admin/customer_list_screen.dart';
 import '../admin/invoice_list_screen.dart';
-import '../technician/technician_dashboard_tab.dart';
-import '../technician/quick_tools_screen.dart';
-import '../sales/sales_dashboard_tab.dart';
-import '../sales/new_registration_screen.dart';
 import '../profile/profile_screen.dart';
-import '../../services/update_service.dart';
+import '../sales/new_registration_screen.dart';
+import '../sales/sales_dashboard_tab.dart';
+import '../technician/quick_tools_screen.dart';
+import '../technician/technician_dashboard_tab.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -32,11 +35,214 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     });
   }
 
+  void _showDanaActionSheet(BuildContext context, dynamic user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          decoration: BoxDecoration(
+            color: isDark ? AppTheme.cardDark : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Bottom sheet drag handle
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Title Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF118EEA), Color(0xFF0C75C2)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Aksi Kilat Internet Desa',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          'Pilih jalan pintas operasi cepat untuk ${user.name ?? user.username}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Quick Action Tiles
+              _buildActionTile(
+                icon: Icons.payments_rounded,
+                iconColor: AppTheme.accentGreen,
+                bgColor: AppTheme.pastelGreen,
+                title: 'Catat Pembayaran Tagihan',
+                subtitle: 'Konfirmasi bayar pelanggan langsung & buat kwitansi WA',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _currentIndex = 1);
+                },
+              ),
+              const SizedBox(height: 10),
+
+              _buildActionTile(
+                icon: Icons.person_add_alt_1_rounded,
+                iconColor: AppTheme.primaryBlue,
+                bgColor: AppTheme.pastelBlue,
+                title: 'Tambah Calon Pelanggan Baru',
+                subtitle: 'Input registrasi pemasangan warga & tandai GPS',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NewRegistrationScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+
+              _buildActionTile(
+                icon: Icons.cell_tower_rounded,
+                iconColor: AppTheme.accentRed,
+                bgColor: AppTheme.pastelRed,
+                title: 'Periksa Pelanggan LOS & Redaman',
+                subtitle: 'Diagnosa kabel optik putus, port OLT, & daya redaman',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+
+              _buildActionTile(
+                icon: Icons.speed_rounded,
+                iconColor: AppTheme.accentPurple,
+                bgColor: AppTheme.pastelPurple,
+                title: 'Speedtest & Ping Server NOC',
+                subtitle: 'Analisa latensi MikroTik, DNS, & stabilitas koneksi',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return BouncingButton(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor.withOpacity(0.35),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: iconColor.withOpacity(0.18), width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return const Scaffold(
@@ -44,43 +250,37 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       );
     }
 
-    // Role-tailored tabs
+    // Role-tailored screens and tabs
     List<Widget> screens = [];
-    List<BottomNavigationBarItem> navItems = [];
+    List<DanaNavItem> navItems = [];
 
     if (user.isAdmin) {
       screens = [
         const AdminDashboardTab(),
-        const CustomerListScreen(),
         const InvoiceListScreen(),
-        const QuickToolsScreen(),
+        const CustomerListScreen(),
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home_rounded),
+        DanaNavItem(
           label: 'Beranda',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people_alt_outlined),
-          activeIcon: Icon(Icons.people_alt_rounded),
-          label: 'Pelanggan',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.receipt_long_outlined),
-          activeIcon: Icon(Icons.receipt_long_rounded),
+        DanaNavItem(
           label: 'Billing',
+          icon: Icons.receipt_long_outlined,
+          activeIcon: Icons.receipt_long_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.build_circle_outlined),
-          activeIcon: Icon(Icons.build_circle_rounded),
-          label: 'Tools',
+        DanaNavItem(
+          label: 'Pelanggan',
+          icon: Icons.people_alt_outlined,
+          activeIcon: Icons.people_alt_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle_outlined),
-          activeIcon: Icon(Icons.account_circle_rounded),
+        DanaNavItem(
           label: 'Saya',
+          icon: Icons.account_circle_outlined,
+          activeIcon: Icons.account_circle_rounded,
         ),
       ];
     } else if (user.role == 'teknisi') {
@@ -91,25 +291,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home_rounded),
+        DanaNavItem(
           label: 'Tugas',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.build_circle_outlined),
-          activeIcon: Icon(Icons.build_circle_rounded),
-          label: 'Tools',
+        DanaNavItem(
+          label: 'Tools NOC',
+          icon: Icons.build_circle_outlined,
+          activeIcon: Icons.build_circle_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people_alt_outlined),
-          activeIcon: Icon(Icons.people_alt_rounded),
+        DanaNavItem(
           label: 'Pelanggan',
+          icon: Icons.people_alt_outlined,
+          activeIcon: Icons.people_alt_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle_outlined),
-          activeIcon: Icon(Icons.account_circle_rounded),
+        DanaNavItem(
           label: 'Saya',
+          icon: Icons.account_circle_outlined,
+          activeIcon: Icons.account_circle_rounded,
         ),
       ];
     } else {
@@ -117,23 +317,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       screens = [
         const SalesDashboardTab(),
         const NewRegistrationScreen(),
+        const CustomerListScreen(),
         const ProfileScreen(),
       ];
       navItems = const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home_rounded),
+        DanaNavItem(
           label: 'Beranda',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_add_alt_outlined),
-          activeIcon: Icon(Icons.person_add_alt_1_rounded),
+        DanaNavItem(
           label: 'Pasang Baru',
+          icon: Icons.person_add_alt_outlined,
+          activeIcon: Icons.person_add_alt_1_rounded,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle_outlined),
-          activeIcon: Icon(Icons.account_circle_rounded),
+        DanaNavItem(
+          label: 'Warga',
+          icon: Icons.people_alt_outlined,
+          activeIcon: Icons.people_alt_rounded,
+        ),
+        DanaNavItem(
           label: 'Saya',
+          icon: Icons.account_circle_outlined,
+          activeIcon: Icons.account_circle_rounded,
         ),
       ];
     }
@@ -147,43 +353,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         index: _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.cardDark : Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppTheme.borderDark : const Color(0xFFEDF2F7),
-              width: 1,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 60,
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (idx) => setState(() => _currentIndex = idx),
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              selectedItemColor: AppTheme.primaryBlue,
-              unselectedItemColor: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-              selectedFontSize: 11,
-              unselectedFontSize: 10.5,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-              items: navItems,
-            ),
-          ),
-        ),
+      bottomNavigationBar: DanaBottomNav(
+        currentIndex: _currentIndex,
+        items: navItems,
+        onTabSelected: (idx) => setState(() => _currentIndex = idx),
+        onCenterActionTap: () => _showDanaActionSheet(context, user),
       ),
     );
   }
