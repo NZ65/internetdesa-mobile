@@ -13,6 +13,9 @@ class CustomerModel {
   final double? longitude;
   final String? packageName;
   final int? packagePrice;
+  final int? packageId;
+  final int? billingDate;
+  final String? notes;
   final String? wifiSsid;
   final String? wifiPassword;
   final String? dropcoreLength;
@@ -33,6 +36,9 @@ class CustomerModel {
     this.longitude,
     this.packageName,
     this.packagePrice,
+    this.packageId,
+    this.billingDate,
+    this.notes,
     this.wifiSsid,
     this.wifiPassword,
     this.dropcoreLength,
@@ -59,6 +65,9 @@ class CustomerModel {
       longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
       packageName: json['package_name']?.toString(),
       packagePrice: json['package_price'] != null ? int.tryParse(json['package_price'].toString()) : null,
+      packageId: json['package_id'] != null ? int.tryParse(json['package_id'].toString()) : null,
+      billingDate: json['billing_date'] != null ? int.tryParse(json['billing_date'].toString()) : 1,
+      notes: json['notes']?.toString(),
       wifiSsid: json['wifi_ssid']?.toString(),
       wifiPassword: json['wifi_password']?.toString(),
       dropcoreLength: json['dropcore_length']?.toString() ?? json['dropcore']?.toString(),
