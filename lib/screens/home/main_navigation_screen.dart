@@ -293,6 +293,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Single
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return const Scaffold(

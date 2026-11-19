@@ -103,11 +103,13 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       invoiceNumber: 'INV-${c.custId}',
       customerId: c.id,
       customerName: c.name,
-      period: c.earliestDueDate ?? 'Bulan Berjalan',
+      customerPhone: c.phone,
+      customerAddress: c.address,
+      packageName: c.packageName,
+      custId: c.custId,
       total: c.unpaidAmount ?? c.packagePrice ?? 110000,
       status: 'unpaid',
       dueDate: c.earliestDueDate ?? '',
-      createdAt: '',
     );
 
     final res = await showDialog<bool>(
