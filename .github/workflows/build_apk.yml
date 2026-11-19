@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.5.5: Fitur baru Speedtest Resmi Ookla-Style (Uji Ping, Download & Upload riil ke Core Router NOC Sukorejo), serta integrasi tombol cepat di Dashboard & Quick Tools." \
+            -F "changelog=Update v1.5.6: Integrasi menyeluruh Speedtest Resmi Ookla-Style ke seluruh menu Aplikasi (Quick Tools, Dashboard Teknisi, Dashboard Admin) dan portal web." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

@@ -482,6 +482,60 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
               ),
 
               const SizedBox(height: 16),
+              Card(
+                color: const Color(0xFF141526),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFF00E5FF), width: 1.2),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.speed_rounded, color: Color(0xFF00E5FF), size: 26),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'SPEEDTEST RESMI (OOKLA STYLE)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF), letterSpacing: 0.8),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Uji Download, Upload & Ping riil ke Core Router',
+                              style: TextStyle(fontSize: 11, color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () => _openUrl('${AppConfig.defaultBaseUrl}/speedtest'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00E5FF),
+                          foregroundColor: const Color(0xFF0B0C17),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('MULAI'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
               const Text('Diagnostik Ping & Latensi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
 
