@@ -66,6 +66,7 @@ class PackageModel {
   final String? description;
 
   String get speedText => (speedDown != null && speedDown!.isNotEmpty) ? '$speedDown Mbps' : 'Unlimited';
+  String get speed => speedText;
 
   PackageModel({
     required this.id,

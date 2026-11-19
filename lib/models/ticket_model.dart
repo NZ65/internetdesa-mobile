@@ -33,6 +33,7 @@ class TicketModel {
 
   bool get isOpen => status == 'open' || status == 'in_progress';
   bool get isResolved => status == 'resolved' || status == 'closed';
+  String get issue => (description != null && description!.isNotEmpty) ? description! : title;
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     return TicketModel(
