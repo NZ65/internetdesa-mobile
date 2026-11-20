@@ -48,7 +48,11 @@ class DashboardModel {
   int get losOnus => olt?['los_onus'] ?? 0;
   String get avgRxPower => olt?['avg_rx_power'] ?? '-18.5 dBm';
 
-  factory DashboardModel.fromJson(Map<String, dynamic> json) {
+  factory DashboardModel.fromJson(Map<String, dynamic> raw) {
+    final Map<String, dynamic> json = (raw['data'] is Map)
+        ? Map<String, dynamic>.from(raw['data'])
+        : raw;
+
     List<dynamic> items = [];
     if (json['recent_payments'] is List) {
       items = json['recent_payments'];

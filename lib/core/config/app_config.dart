@@ -1,7 +1,7 @@
 class AppConfig {
   static const String appName = 'Internet Desa';
-  static const String appVersion = '1.5.8';
-  static const int appVersionCode = 15;
+  static const String appVersion = '1.5.9';
+  static const int appVersionCode = 16;
 
   // Production Server Base URL
   static const String defaultBaseUrl = 'https://internetdesaku.my.id';

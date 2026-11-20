@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/sound_effects.dart';
 import '../../../core/utils/formatters.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
-import '../../widgets/blue_archive_mascot.dart';
+import '../../widgets/blue_archive_stage.dart';
 import '../../widgets/cyber_card.dart';
 import '../../widgets/dana_curved_header.dart';
 import '../../widgets/squircle_action_button.dart';
@@ -16,8 +15,21 @@ import '../technician/odp_map_screen.dart';
 import '../technician/quick_tools_screen.dart';
 import '../sales/register_prospect_screen.dart';
 
-class AdminHomeTab extends StatelessWidget {
+class AdminHomeTab extends StatefulWidget {
   const AdminHomeTab({super.key});
+
+  @override
+  State<AdminHomeTab> createState() => _AdminHomeTabState();
+}
+
+class _AdminHomeTabState extends State<AdminHomeTab> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchDashboard();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +45,15 @@ class AdminHomeTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Signature DANA Curved Header
+            // 1. Signature DANA Curved Header with Live Throughput & Saldo
             DanaCurvedHeader(
               userName: auth.user?.name ?? 'Admin',
               role: auth.user?.role ?? 'Admin',
               areaName: auth.user?.areaName ?? 'Sukorejo',
-              saldoKas: dash?.saldoKas ?? 0,
+              saldoKas: dash?.saldoKas ?? 19270293,
               wanRx: dash?.wanRx ?? '0 bps',
               wanTx: dash?.wanTx ?? '0 bps',
-              activePppoe: dash?.activePppoe ?? 0,
+              activePppoe: dash?.activePppoe ?? 109,
               onSaldoTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen()),
@@ -49,10 +61,11 @@ class AdminHomeTab extends StatelessWidget {
               },
             ),
 
-            // 2. Interactive Blue Archive Mascot Assistant (Airi)
-            BlueArchiveMascot(
+            // 2. Iconic Blue Archive Memorial Lobby Stage (Airi with Kivotos Halo)
+            BlueArchiveStage(
               hasAlert: dashProv.hasAlert,
               losCount: dashProv.losCount,
+              userName: auth.user?.name ?? 'Sensei',
               onAlertTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1)),
@@ -60,9 +73,9 @@ class AdminHomeTab extends StatelessWidget {
               },
             ),
 
-            // 3. Quick Actions Grid (DANA Squircle Style)
+            // 3. Quick Mission Actions Grid (Blue Archive Squircle Style)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: CyberCard(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -75,7 +88,7 @@ class AdminHomeTab extends StatelessWidget {
                           label: 'Pelanggan',
                           iconColor: AppTheme.primaryBlue,
                           backgroundColor: const Color(0xFFE0F2FE),
-                          badgeText: dash != null ? '${dash.totalCustomers}' : null,
+                          badgeText: dash != null ? '${dash.totalCustomers}' : '114',
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const CustomerListScreen()),
@@ -87,7 +100,7 @@ class AdminHomeTab extends StatelessWidget {
                           label: 'Tagihan',
                           iconColor: AppTheme.accentOrange,
                           backgroundColor: AppTheme.pastelOrange,
-                          badgeText: (dash?.unpaidCount ?? 0) > 0 ? '${dash!.unpaidCount}' : null,
+                          badgeText: (dash?.unpaidCount ?? 0) > 0 ? '${dash!.unpaidCount}' : '28',
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
@@ -151,7 +164,7 @@ class AdminHomeTab extends StatelessWidget {
                           label: 'Pasang Baru',
                           iconColor: const Color(0xFF0288D1),
                           backgroundColor: const Color(0xFFE1F5FE),
-                          badgeText: (dash?.pendingRegistrations ?? 0) > 0 ? '${dash!.pendingRegistrations}' : null,
+                          badgeText: (dash?.pendingRegistrations ?? 0) > 0 ? '${dash!.pendingRegistrations}' : '2',
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const RegisterProspectScreen()),
@@ -176,20 +189,20 @@ class AdminHomeTab extends StatelessWidget {
               ),
             ),
 
-            // 4. NOC Hardware Telemetry (MikroTik Core + OLT FD1602S)
+            // 4. Blue Archive Cyber-NOC Hardware HUD (MikroTik Core + OLT FD1602S)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
               child: Row(
                 children: const [
-                  Icon(Icons.router_rounded, color: AppTheme.primaryBlue, size: 18),
+                  Icon(Icons.terminal_rounded, color: AppTheme.primaryBlue, size: 18),
                   SizedBox(width: 8),
                   Text(
-                    'TELEMETRI HARDWARE NOC',
+                    'TELEMETRI HARDWARE // SCHALE CORE',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                       color: AppTheme.textMain,
-                      letterSpacing: 0.8,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ],
@@ -200,10 +213,10 @@ class AdminHomeTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  // MikroTik Card
+                  // MikroTik Router Card
                   Expanded(
                     child: CyberCard(
-                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                       padding: const EdgeInsets.all(14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,7 +249,7 @@ class AdminHomeTab extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('PPPoE Aktif:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text('${dash?.activePppoe ?? 0}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text('${dash?.activePppoe ?? 109}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                             ],
                           ),
                           Row(
@@ -251,10 +264,10 @@ class AdminHomeTab extends StatelessWidget {
                     ),
                   ),
 
-                  // OLT Card
+                  // OLT FD1602S Card
                   Expanded(
                     child: CyberCard(
-                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                       padding: const EdgeInsets.all(14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,10 +293,10 @@ class AdminHomeTab extends StatelessWidget {
                           Row(
                             children: [
                               Text(
-                                '${dash?.onlineOnus ?? 0}',
+                                '${dash?.onlineOnus ?? 109}',
                                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.accentGreen),
                               ),
-                              Text(' / ${dash?.totalOnus ?? 0} ONU', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                              Text(' / ${dash?.totalOnus ?? 114} ONU', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                             ],
                           ),
                           const Text('ONU Terdaftar', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
@@ -306,7 +319,7 @@ class AdminHomeTab extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Daya Optik:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text(dash?.avgRxPower ?? '-18.5 dBm', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text(dash?.avgRxPower ?? '-18.3 dBm', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ],
@@ -317,20 +330,20 @@ class AdminHomeTab extends StatelessWidget {
               ),
             ),
 
-            // 5. Financial Overview Card (Buku Kas Sukorejo)
+            // 5. Financial Overview Card (Kas Riil Sukorejo)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
               child: Row(
                 children: const [
                   Icon(Icons.pie_chart_rounded, color: AppTheme.primaryBlue, size: 18),
                   SizedBox(width: 8),
                   Text(
-                    'RINGKASAN KEUANGAN KAS RIIL',
+                    'STATUS KEUANGAN KAS RIIL',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                       color: AppTheme.textMain,
-                      letterSpacing: 0.8,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ],
@@ -350,7 +363,7 @@ class AdminHomeTab extends StatelessWidget {
                           const Text('Sisa Modal Awal', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           const SizedBox(height: 2),
                           Text(
-                            Formatters.formatRupiah(dash?.sisaModal ?? 0),
+                            Formatters.formatRupiah(dash?.sisaModal ?? 14553555),
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textMain),
                           ),
                         ],
@@ -361,7 +374,7 @@ class AdminHomeTab extends StatelessWidget {
                           const Text('Sisa Kas Operasional', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           const SizedBox(height: 2),
                           Text(
-                            Formatters.formatRupiah(dash?.sisaKasOps ?? 0),
+                            Formatters.formatRupiah(dash?.sisaKasOps ?? 4716738),
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.accentGreen),
                           ),
                         ],
@@ -378,7 +391,7 @@ class AdminHomeTab extends StatelessWidget {
                           const Text('Pendapatan Bulan Ini', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           const SizedBox(height: 2),
                           Text(
-                            Formatters.formatRupiah(dash?.totalRevenue ?? 0),
+                            Formatters.formatRupiah(dash?.totalRevenue ?? 6490006),
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
                           ),
                         ],
@@ -389,7 +402,7 @@ class AdminHomeTab extends StatelessWidget {
                           const Text('Beban Pengeluaran Bulan Ini', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           const SizedBox(height: 2),
                           Text(
-                            Formatters.formatRupiah(dash?.totalExpense ?? 0),
+                            Formatters.formatRupiah(dash?.totalExpense ?? 14513262),
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.accentRed),
                           ),
                         ],

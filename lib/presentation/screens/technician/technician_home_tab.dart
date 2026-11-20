@@ -5,7 +5,7 @@ import '../../../core/theme/sound_effects.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/technician_provider.dart';
-import '../../widgets/blue_archive_mascot.dart';
+import '../../widgets/blue_archive_stage.dart';
 import '../../widgets/cyber_card.dart';
 import '../../widgets/dana_curved_header.dart';
 import '../../widgets/empty_state.dart';
@@ -64,9 +64,10 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
             ),
 
             // Interactive Mascot Airi
-            BlueArchiveMascot(
+            BlueArchiveStage(
               hasAlert: dashProv.hasAlert,
               losCount: dashProv.losCount,
+              userName: auth.user?.name ?? 'Teknisi',
               onAlertTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1)),

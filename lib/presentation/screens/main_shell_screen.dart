@@ -31,6 +31,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
   void initState() {
     super.initState();
     _checkForOtaUpdate();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchDashboard();
+    });
   }
 
   void _checkForOtaUpdate() async {

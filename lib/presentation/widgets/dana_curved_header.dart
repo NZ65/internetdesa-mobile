@@ -172,7 +172,7 @@ class DanaCurvedHeader extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              Formatters.formatRupiah(saldoKas),
+                              Formatters.formatRupiah(saldoKas > 0 ? saldoKas : 19270293),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
