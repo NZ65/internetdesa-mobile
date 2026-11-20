@@ -52,18 +52,20 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Curved DANA Header
+            // Curved DANA & Blue Archive Header
             DanaCurvedHeader(
               userName: auth.user?.name ?? 'Teknisi',
               role: 'TEKNISI LAPANGAN',
               areaName: auth.user?.areaName ?? 'Sukorejo',
               saldoKas: dashProv.dashboard?.saldoKas ?? 0,
+              sisaModal: dashProv.dashboard?.sisaModal,
+              sisaKasOps: dashProv.dashboard?.sisaKasOps,
               wanRx: dashProv.dashboard?.wanRx ?? '0 bps',
               wanTx: dashProv.dashboard?.wanTx ?? '0 bps',
               activePppoe: dashProv.dashboard?.activePppoe ?? 0,
             ),
 
-            // Interactive Mascot Airi
+            // Blue Archive SCHALE Tactical Terminal & MomoTalk
             BlueArchiveStage(
               hasAlert: dashProv.hasAlert,
               losCount: dashProv.losCount,
@@ -84,6 +86,7 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     SquircleActionButton(
+                      code: '01',
                       icon: Icons.alt_route_rounded,
                       label: 'ODP Map',
                       iconColor: AppTheme.accentPurple,
@@ -96,6 +99,7 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                       },
                     ),
                     SquircleActionButton(
+                      code: '02',
                       icon: Icons.warning_amber_rounded,
                       label: 'Pelanggan LOS',
                       iconColor: AppTheme.accentRed,
@@ -108,6 +112,7 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                       },
                     ),
                     SquircleActionButton(
+                      code: '03',
                       icon: Icons.wifi_tethering_rounded,
                       label: 'Ping Test',
                       iconColor: AppTheme.primaryBlue,
@@ -119,6 +124,7 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                       },
                     ),
                     SquircleActionButton(
+                      code: '04',
                       icon: Icons.restart_alt_rounded,
                       label: 'Reboot ONT',
                       iconColor: AppTheme.accentGreen,

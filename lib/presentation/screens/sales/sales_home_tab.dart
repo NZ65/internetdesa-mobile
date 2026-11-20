@@ -49,15 +49,17 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Curved DANA Header
+            // Curved DANA & Blue Archive Header
             DanaCurvedHeader(
               userName: auth.user?.name ?? 'Sales',
               role: 'TIM SALES LAPANGAN',
               areaName: auth.user?.areaName ?? 'Sukorejo',
               saldoKas: dashProv.dashboard?.saldoKas ?? 0,
+              sisaModal: dashProv.dashboard?.sisaModal,
+              sisaKasOps: dashProv.dashboard?.sisaKasOps,
             ),
 
-            // Interactive Mascot Airi
+            // Blue Archive SCHALE Tactical Terminal & MomoTalk
             BlueArchiveStage(
               hasAlert: dashProv.hasAlert,
               losCount: dashProv.losCount,
@@ -73,6 +75,7 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     SquircleActionButton(
+                      code: '01',
                       icon: Icons.person_add_alt_1_rounded,
                       label: 'Daftar Baru',
                       iconColor: AppTheme.primaryBlue,
@@ -84,6 +87,7 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
                       },
                     ),
                     SquircleActionButton(
+                      code: '02',
                       icon: Icons.inventory_2_rounded,
                       label: 'Paket Internet',
                       iconColor: AppTheme.accentOrange,
@@ -94,6 +98,7 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
                       },
                     ),
                     SquircleActionButton(
+                      code: '03',
                       icon: Icons.task_alt_rounded,
                       label: 'Terpasang',
                       iconColor: AppTheme.accentGreen,
@@ -102,6 +107,7 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
                       onTap: () {},
                     ),
                     SquircleActionButton(
+                      code: '04',
                       icon: Icons.hourglass_top_rounded,
                       label: 'Antrean',
                       iconColor: AppTheme.accentPurple,

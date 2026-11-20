@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.5.9: Blue Archive Memorial Lobby Stage (Airi with Kivotos Halo), auto data unwrap fix, live telemetry & financial stats accuracy." \
+            -F "changelog=Update v1.6.0: Pure Blue Archive SCHALE Tactical Terminal (No cartoon mascot), Vector Kivotos Halo, MomoTalk Dispatch Console, and Tactical Mission Board." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

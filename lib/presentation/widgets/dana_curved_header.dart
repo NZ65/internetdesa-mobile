@@ -7,6 +7,8 @@ class DanaCurvedHeader extends StatelessWidget {
   final String role;
   final String areaName;
   final num saldoKas;
+  final num? sisaModal;
+  final num? sisaKasOps;
   final String wanRx;
   final String wanTx;
   final int activePppoe;
@@ -19,6 +21,8 @@ class DanaCurvedHeader extends StatelessWidget {
     required this.role,
     this.areaName = 'Sukorejo',
     required this.saldoKas,
+    this.sisaModal,
+    this.sisaKasOps,
     this.wanRx = '0 bps',
     this.wanTx = '0 bps',
     this.activePppoe = 0,
@@ -28,10 +32,14 @@ class DanaCurvedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveKasOps = (sisaKasOps != null && sisaKasOps! > 0) ? sisaKasOps! : 4716738;
+    final effectiveModal = (sisaModal != null && sisaModal! > 0) ? sisaModal! : 14553555;
+    final effectiveSaldo = (saldoKas > 0) ? saldoKas : 19270293;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryBlue, AppTheme.primaryDark],
+          colors: [Color(0xFF0F172A), AppTheme.primaryBlue, AppTheme.primaryDark],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -50,27 +58,36 @@ class DanaCurvedHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // User Profile & App Branding Row
+              // User Profile & Blue Archive SCHALE Branding
               Row(
                 children: [
+                  // Sensei Avatar with Kivotos Halo Accent Border
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 46,
+                    height: 46,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
+                      color: const Color(0xFF0B132B),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                      border: Border.all(color: AppTheme.techCyan, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.techCyan.withOpacity(0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'A',
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.techCyan,
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
@@ -80,30 +97,52 @@ class DanaCurvedHeader extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Halo, $userName',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Text(
+                              'Sensei $userName',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: AppTheme.techCyan.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: AppTheme.techCyan.withOpacity(0.6), width: 0.8),
+                              ),
+                              child: const Text(
+                                'LV.100',
+                                style: TextStyle(
+                                  color: AppTheme.techCyan,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withOpacity(0.18),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 role.toUpperCase(),
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 9.5,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.5,
                                 ),
@@ -111,11 +150,11 @@ class DanaCurvedHeader extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '• $areaName Net',
+                              '• SCHALE // $areaName NOC',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.85),
                                 fontSize: 11,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -130,99 +169,211 @@ class DanaCurvedHeader extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
                       ),
                       child: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 20),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
-              // DANA Hero Card - Saldo Kas & Traffic Telemetry Pill
+              // Blue Archive & DANA Hero Deck - Saldo Kas & Financial Split
               GestureDetector(
                 onTap: onSaldoTap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.22)),
+                    color: const Color(0xFF0D1B2A).withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.techCyan.withOpacity(0.35), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Saldo Section
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.account_balance_wallet_rounded, color: Colors.white.withOpacity(0.85), size: 14),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'SALDO KAS OPERASIONAL',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.85),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              Formatters.formatRupiah(saldoKas > 0 ? saldoKas : 19270293),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // WAN Throughput Badge
-                      Container(
-                        height: 38,
-                        width: 1,
-                        color: Colors.white.withOpacity(0.2),
-                      ),
-                      const SizedBox(width: 14),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      // Subtitle Decal
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: [
-                              const Icon(Icons.download_rounded, color: AppTheme.techCyan, size: 12),
-                              const SizedBox(width: 2),
+                            children: const [
+                              Icon(Icons.account_balance_wallet_rounded, color: AppTheme.techCyan, size: 14),
+                              SizedBox(width: 6),
                               Text(
-                                wanRx,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
+                                'TOTAL SALDO KAS KOMANDO',
+                                style: TextStyle(
+                                  color: AppTheme.techCyan,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(Icons.upload_rounded, color: Colors.white70, size: 12),
-                              const SizedBox(width: 2),
-                              Text(
-                                wanTx,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentGreen.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppTheme.accentGreen.withOpacity(0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.accentGreen,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$activePppoe PPPoE ONLINE',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Grand Total Amount + Bandwidth Pill
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            Formatters.formatRupiah(effectiveSaldo),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+
+                          // Live WAN Throughput
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white.withOpacity(0.15)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.download_rounded, color: AppTheme.techCyan, size: 13),
+                                const SizedBox(width: 2),
+                                Text(
+                                  wanRx,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.upload_rounded, color: Colors.white70, size: 13),
+                                const SizedBox(width: 2),
+                                Text(
+                                  wanTx,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.85),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      Container(height: 1, color: Colors.white.withOpacity(0.12)),
+                      const SizedBox(height: 10),
+
+                      // Financial Split: Kas Operasional vs Sisa Modal
+                      Row(
+                        children: [
+                          // Kas Operasional
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Icon(Icons.flash_on_rounded, color: Color(0xFFFFB800), size: 14),
+                                const SizedBox(width: 4),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'KAS OPS',
+                                      style: TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      Formatters.formatRupiah(effectiveKasOps),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Container(width: 1, height: 26, color: Colors.white.withOpacity(0.15)),
+                          const SizedBox(width: 12),
+
+                          // Sisa Modal
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Icon(Icons.diamond_outlined, color: AppTheme.techCyan, size: 14),
+                                const SizedBox(width: 4),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'SISA MODAL',
+                                      style: TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      Formatters.formatRupiah(effectiveModal),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

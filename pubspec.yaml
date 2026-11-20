@@ -1,7 +1,7 @@
 name: internetdesa_mobile
 description: "Aplikasi Terpadu InternetDesa untuk Admin, Teknisi, dan Sales"
 publish_to: "none"
-version: 1.5.9+16
+version: 1.6.0+17
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

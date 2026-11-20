@@ -51,6 +51,8 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
               role: auth.user?.role ?? 'Admin',
               areaName: auth.user?.areaName ?? 'Sukorejo',
               saldoKas: dash?.saldoKas ?? 19270293,
+              sisaModal: dash?.sisaModal ?? 14553555,
+              sisaKasOps: dash?.sisaKasOps ?? 4716738,
               wanRx: dash?.wanRx ?? '0 bps',
               wanTx: dash?.wanTx ?? '0 bps',
               activePppoe: dash?.activePppoe ?? 109,
@@ -61,7 +63,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
               },
             ),
 
-            // 2. Iconic Blue Archive Memorial Lobby Stage (Airi with Kivotos Halo)
+            // 2. Iconic Blue Archive SCHALE Tactical Terminal & MomoTalk Console
             BlueArchiveStage(
               hasAlert: dashProv.hasAlert,
               losCount: dashProv.losCount,
@@ -73,7 +75,26 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
               },
             ),
 
-            // 3. Quick Mission Actions Grid (Blue Archive Squircle Style)
+            // 3. Quick Mission Actions Grid (Blue Archive Tactical Operation Tiles)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
+              child: Row(
+                children: const [
+                  Icon(Icons.dashboard_customize_rounded, color: AppTheme.primaryBlue, size: 15),
+                  SizedBox(width: 8),
+                  Text(
+                    'TACTICAL MISSION BOARD // SECTOR OPERATIONS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.textMain,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: CyberCard(
@@ -84,6 +105,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         SquircleActionButton(
+                          code: '01',
                           icon: Icons.people_alt_rounded,
                           label: 'Pelanggan',
                           iconColor: AppTheme.primaryBlue,
@@ -96,6 +118,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '02',
                           icon: Icons.receipt_long_rounded,
                           label: 'Tagihan',
                           iconColor: AppTheme.accentOrange,
@@ -108,6 +131,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '03',
                           icon: Icons.add_card_rounded,
                           label: 'Catat Kas',
                           iconColor: AppTheme.accentGreen,
@@ -119,6 +143,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '04',
                           icon: Icons.alt_route_rounded,
                           label: 'ODP Map',
                           iconColor: AppTheme.accentPurple,
@@ -137,6 +162,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         SquircleActionButton(
+                          code: '05',
                           icon: Icons.speed_rounded,
                           label: 'Diagnosa',
                           iconColor: AppTheme.techCyan,
@@ -148,6 +174,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '06',
                           icon: Icons.warning_amber_rounded,
                           label: 'Cek LOS',
                           iconColor: AppTheme.accentRed,
@@ -160,6 +187,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '07',
                           icon: Icons.person_add_alt_1_rounded,
                           label: 'Pasang Baru',
                           iconColor: const Color(0xFF0288D1),
@@ -172,6 +200,7 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                           },
                         ),
                         SquircleActionButton(
+                          code: '08',
                           icon: Icons.account_balance_wallet_rounded,
                           label: 'Buku Kas',
                           iconColor: const Color(0xFF5E35B1),
