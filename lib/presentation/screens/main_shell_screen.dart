@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/sound_effects.dart';
 import '../../core/utils/native_updater.dart';
 import '../providers/auth_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../widgets/in_app_update_dialog.dart';
 import 'admin/admin_home_tab.dart';
 import 'admin/customer_list_screen.dart';
