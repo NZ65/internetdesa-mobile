@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.5.7: Sertifikat rilis tetap resmi (Release Keystore upload-keystore.jks) untuk mencegah bentrok paket di masa depan, dan integrasi penuh Speedtest." \
+            -F "changelog=Update v1.5.8: Rebuild total arsitektur aplikasi (Clean Feature-First), tema Blue Archive Cyber-NOC & DANA, dynamic Airi mascot assistant, buku kas, live traffic & optical monitor." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."

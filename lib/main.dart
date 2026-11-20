@@ -1,35 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'config/theme.dart';
-import 'providers/auth_provider.dart';
-import 'providers/customer_provider.dart';
-import 'providers/dashboard_provider.dart';
-import 'providers/invoice_provider.dart';
-import 'providers/sales_provider.dart';
-import 'providers/ticket_provider.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/home/main_navigation_screen.dart';
-import 'services/notification_service.dart';
-import 'services/storage_service.dart';
+import 'core/config/app_config.dart';
+import 'core/theme/app_theme.dart';
+import 'data/services/storage_service.dart';
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/customer_provider.dart';
+import 'presentation/providers/dashboard_provider.dart';
+import 'presentation/providers/expense_provider.dart';
+import 'presentation/providers/invoice_provider.dart';
+import 'presentation/providers/sales_provider.dart';
+import 'presentation/providers/technician_provider.dart';
+import 'presentation/screens/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
-  await NotificationService.init();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => CustomerProvider()),
-        ChangeNotifierProvider(create: (_) => InvoiceProvider()),
-        ChangeNotifierProvider(create: (_) => TicketProvider()),
-        ChangeNotifierProvider(create: (_) => SalesProvider()),
-      ],
-      child: const InternetDesaApp(),
-    ),
-  );
+  runApp(const InternetDesaApp());
 }
 
 class InternetDesaApp extends StatelessWidget {
@@ -37,19 +24,21 @@ class InternetDesaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Internet Desa Mobile',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          if (auth.isAuthenticated) {
-            return const MainNavigationScreen();
-          }
-          return const LoginScreen();
-        },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => CustomerProvider()),
+        ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => InvoiceProvider()),
+        ChangeNotifierProvider(create: (_) => TechnicianProvider()),
+        ChangeNotifierProvider(create: (_) => SalesProvider()),
+      ],
+      child: MaterialApp(
+        title: AppConfig.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: const SplashScreen(),
       ),
     );
   }
