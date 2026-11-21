@@ -16,6 +16,7 @@ class ExpenseProvider extends ChangeNotifier {
   String _currentCategory = 'all';
 
   List<ExpenseModel> get transactions => _transactions;
+  List<ExpenseModel> get expenses => _transactions;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, dynamic> get summary => _summary;
@@ -112,5 +113,31 @@ class ExpenseProvider extends ChangeNotifier {
       notifyListeners();
     }
     return false;
+  }
+
+  Future<bool> createExpense({
+    String? title,
+    String? itemName,
+    required num amount,
+    String type = 'out',
+    String category = 'operasional',
+    String paymentSource = 'Kas Operasional',
+    String paymentMethod = 'cash',
+    String? recipient,
+    String? notes,
+    File? receiptImage,
+    File? receiptFile,
+  }) async {
+    return addExpense(
+      itemName: itemName ?? title ?? '',
+      amount: amount,
+      type: type,
+      category: category,
+      paymentSource: paymentSource,
+      paymentMethod: paymentMethod,
+      recipient: recipient,
+      notes: notes,
+      receiptImage: receiptImage ?? receiptFile,
+    );
   }
 }

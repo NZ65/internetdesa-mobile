@@ -99,4 +99,22 @@ class TechnicianProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> pingHost(String target) => runPing(target);
+
+  Future<bool> kickPppoe(String username) async {
+    try {
+      final res = await ApiClient().post(AppConfig.epToolsKick, data: {
+        'username': username.trim(),
+      });
+      if (res['success'] == true) {
+        SoundEffects.playSuccess();
+        return true;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+    return false;
+  }
 }
