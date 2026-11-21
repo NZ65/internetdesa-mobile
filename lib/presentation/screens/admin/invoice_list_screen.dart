@@ -181,10 +181,11 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 onPressed: () async {
                   Navigator.pop(ctx);
                   final ok = await context.read<InvoiceProvider>().payInvoice(
-                    invoiceId,
+                    invoiceId: invoiceId,
+                    amount: amount,
                     paymentMethod: method,
                     notes: notesCtrl.text.trim(),
-                    proofFile: proofFile,
+                    proofImage: proofFile,
                   );
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

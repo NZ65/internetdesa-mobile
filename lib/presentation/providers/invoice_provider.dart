@@ -67,14 +67,17 @@ class InvoiceProvider extends ChangeNotifier {
 
   Future<bool> payInvoice({
     required int invoiceId,
-    required num amount,
+    num amount = 0,
     String paymentMethod = 'cash',
     String? notes,
     File? proofImage,
+    File? proofFile,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    final effectiveImage = proofImage ?? proofFile;
 
     try {
       final fields = {
@@ -83,7 +86,7 @@ class InvoiceProvider extends ChangeNotifier {
         'notes': notes?.trim() ?? '',
       };
       final files = {
-        'proof_image': proofImage,
+        'proof_image': effectiveImage,
       };
 
       final res = await ApiClient().postMultipart('${AppConfig.epInvoices}/$invoiceId/pay', fields, files);

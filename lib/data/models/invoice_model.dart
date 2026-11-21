@@ -28,6 +28,7 @@ class InvoiceModel {
   });
 
   bool get isPaid => status == 'paid';
+  bool get isUnpaid => status != 'paid';
   String get invoiceNumber => invoiceNo;
   num get amount => total;
 

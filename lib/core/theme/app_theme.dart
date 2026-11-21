@@ -30,6 +30,7 @@ class AppTheme {
 
   // Backward-compatibility aliases for legacy screen references
   static const Color primaryBlue = neonCyan;
+  static const Color primaryCyan = neonCyan;
   static const Color primaryDark = Color(0xFF0C75C2);
   static const Color primaryNavy = bgDark;
   static const Color techCyan = neonCyan;
@@ -38,8 +39,11 @@ class AppTheme {
   static const Color textLight = textSilver;
   static const Color cardLight = bgCard;
   static const Color cardDark = bgCard;
+  static const Color bgCardElevated = bgCardLight;
   static const Color borderLight = borderDark;
+  static const Color borderSubtle = borderDark;
   static const Color accentGreen = neonGreen;
+  static const Color accentYellow = hazardYellow;
   static const Color accentRed = crimsonRed;
   static const Color accentPurple = electricPurple;
   static const Color pastelGreen = Color(0x2200E676);
@@ -66,6 +70,8 @@ class AppTheme {
   ];
 
   static const List<BoxShadow> softShadow = cardShadow;
+
+  static ThemeData get lightTheme => darkTheme;
 
   static ThemeData get darkTheme {
     final baseFont = GoogleFonts.plusJakartaSansTextTheme();
