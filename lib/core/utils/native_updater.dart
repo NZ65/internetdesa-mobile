@@ -54,4 +54,20 @@ class NativeUpdater {
       onError('Gagal mengunduh pembaruan: $e');
     }
   }
+
+  /// Convenience wrapper returning Future<bool>
+  static Future<bool> downloadAndInstallApk(
+    String downloadUrl, {
+    required void Function(int received, int total) onProgress,
+  }) async {
+    bool ok = true;
+    await downloadAndInstall(
+      downloadUrl: downloadUrl,
+      onProgress: onProgress,
+      onError: (_) {
+        ok = false;
+      },
+    );
+    return ok;
+  }
 }

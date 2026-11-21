@@ -117,7 +117,4 @@ class AppTheme {
       ),
     );
   }
-
-  // Fallback getter so existing references to lightTheme work identically with ZZZ dark aesthetic
-  static ThemeData get lightTheme => darkTheme;
 }
