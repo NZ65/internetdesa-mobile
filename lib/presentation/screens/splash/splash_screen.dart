@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../providers/auth_provider.dart';
@@ -17,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _fadeAnimation;
-  late final Animation<double> _haloAnimation;
+  late final Animation<double> _glowAnimation;
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       curve: const Interval(0.2, 0.8, curve: Curves.easeIn),
     );
 
-    _haloAnimation = Tween<double>(begin: 0.8, end: 1.25).animate(
+    _glowAnimation = Tween<double>(begin: 0.8, end: 1.25).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
@@ -71,27 +72,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A192F), // Cyber Navy
+      backgroundColor: AppTheme.bgDark,
       body: Stack(
         children: [
-          // Cyber Grid & Glow Accents
+          // Cyber Glow Accents
           Center(
             child: AnimatedBuilder(
-              animation: _haloAnimation,
+              animation: _glowAnimation,
               builder: (context, child) {
                 return Container(
-                  width: 240 * _haloAnimation.value,
-                  height: 240 * _haloAnimation.value,
+                  width: 220 * _glowAnimation.value,
+                  height: 220 * _glowAnimation.value,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.techCyan.withOpacity(0.18),
-                        blurRadius: 70,
+                        color: AppTheme.primaryCyan.withOpacity(0.25),
+                        blurRadius: 80,
                         spreadRadius: 20,
                       ),
                       BoxShadow(
-                        color: AppTheme.primaryBlue.withOpacity(0.25),
+                        color: AppTheme.accentYellow.withOpacity(0.12),
                         blurRadius: 100,
                         spreadRadius: 30,
                       ),
@@ -102,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             ),
           ),
 
-          // Central Logo & Mascot Reveal
+          // Central Logo Reveal
           Center(
             child: ScaleTransition(
               scale: _scaleAnimation,
@@ -112,28 +113,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 96,
+                      height: 96,
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x6600E5FF),
-                            blurRadius: 25,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
+                        color: AppTheme.bgCardElevated,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppTheme.primaryCyan, width: 2),
+                        boxShadow: AppTheme.cyanGlow,
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(24),
                         child: Image.asset(
                           'assets/images/logo.png',
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) => const Icon(
                             Icons.wifi_tethering,
-                            color: AppTheme.primaryBlue,
-                            size: 56,
+                            color: AppTheme.primaryCyan,
+                            size: 50,
                           ),
                         ),
                       ),
@@ -144,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: AppTheme.textMain,
                         letterSpacing: 2.0,
                       ),
                     ),
@@ -156,18 +152,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                            color: AppTheme.techCyan,
+                            color: AppTheme.primaryCyan,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          'CYBER-NOC SYSTEM • SUKOREJO',
+                          'TACTICAL NOC & FIBER COMMAND // SUKOREJO',
                           style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.techCyan,
-                            letterSpacing: 1.5,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            fontFamily: 'monospace',
+                            color: AppTheme.primaryCyan,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ],
@@ -185,12 +182,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             right: 0,
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'Blue Archive Cyber Interface • v1.5.8',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF64748B),
+                  'ZZZ Urban Cyber Interface • v${AppConfig.appVersion} (Build ${AppConfig.appVersionCode})',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                    color: AppTheme.textLight,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
                   ),

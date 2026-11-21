@@ -6,6 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../../data/services/storage_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/zzz_button.dart';
+import '../../widgets/zzz_card.dart';
 import '../main_shell_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -72,9 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.bgCardElevated,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppTheme.borderSubtle),
       ),
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
@@ -82,9 +85,20 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Pengaturan Server API',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+            Row(
+              children: const [
+                Icon(Icons.dns_rounded, color: AppTheme.primaryCyan, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'SERVER API CONFIG',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.textMain,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             const Text(
@@ -94,14 +108,23 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: controller,
+              style: const TextStyle(color: AppTheme.textMain),
               decoration: InputDecoration(
                 hintText: 'https://internetdesaku.my.id',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.dns_rounded),
+                hintStyle: const TextStyle(color: AppTheme.textLight),
+                filled: true,
+                fillColor: AppTheme.bgDark,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderSubtle)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primaryCyan)),
+                prefixIcon: const Icon(Icons.link_rounded, color: AppTheme.primaryCyan),
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
+            ZzzButton(
+              label: 'SIMPAN URL SERVER',
+              icon: Icons.save_rounded,
+              type: ZzzButtonType.cyan,
               onPressed: () async {
                 final newUrl = controller.text.trim();
                 if (newUrl.isNotEmpty) {
@@ -109,13 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (mounted) Navigator.pop(ctx);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Simpan URL Server'),
             ),
           ],
         ),
@@ -128,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -143,147 +159,128 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _showServerSettings,
                 ),
               ),
-              const SizedBox(height: 8),
-
-              // Airi Mascot Character Illustration & Halo Speech Bubble
-              Stack(
-                alignment: Alignment.bottomCenter,
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE0F2FE), Colors.white],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryBlue.withOpacity(0.18),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                      border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3), width: 3),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/mascot_happy.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.face, size: 60, color: AppTheme.primaryBlue),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 16),
 
-              // Speech Bubble Greeting
+              // Tactical ZZZ Cyber Emblem
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.2)),
-                  boxShadow: AppTheme.softShadow,
+                  color: AppTheme.bgCardElevated,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.primaryCyan, width: 2),
+                  boxShadow: AppTheme.cyanGlow,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text('✨ ', style: TextStyle(fontSize: 14)),
-                    Flexible(
-                      child: Text(
-                        'Sensei / Operator, selamat datang di Komando Sukorejo!',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryBlue,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+                child: const Center(
+                  child: Icon(
+                    Icons.wifi_tethering,
+                    color: AppTheme.primaryCyan,
+                    size: 48,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // Header Titles
+              // Title Header
               const Text(
                 'INTERNET DESA',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
-                  color: AppTheme.primaryNavy,
-                  letterSpacing: 1.2,
+                  color: AppTheme.textMain,
+                  letterSpacing: 2.0,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Portal Manajemen Admin, Teknisi, & Sales',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.textMuted,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.accentYellow,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'TACTICAL NOC & FIBER COMMAND SYSTEM',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'monospace',
+                      color: AppTheme.primaryCyan,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 32),
 
               // Login Form Card
-              Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: AppTheme.softShadow,
-                  border: Border.all(color: AppTheme.borderLight),
-                ),
+              ZzzCard(
+                tag: 'LOGIN // AUTHENTICATION',
+                isAccent: true,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Username',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMain),
+                      'USERNAME',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace',
+                        color: AppTheme.textMuted,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _usernameController,
+                      style: const TextStyle(color: AppTheme.textMain),
                       decoration: InputDecoration(
                         hintText: 'admin / rudi / haryanto',
                         hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textLight),
-                        prefixIcon: const Icon(Icons.person_outline_rounded, color: AppTheme.primaryBlue, size: 20),
+                        prefixIcon: const Icon(Icons.person_outline_rounded, color: AppTheme.primaryCyan, size: 20),
                         filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
+                        fillColor: AppTheme.bgDark,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.borderSubtle),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.borderSubtle),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 1.5),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.primaryCyan, width: 1.5),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
+
                     const Text(
-                      'Password',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMain),
+                      'PASSWORD',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace',
+                        color: AppTheme.textMuted,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
+                      style: const TextStyle(color: AppTheme.textMain),
                       decoration: InputDecoration(
                         hintText: '••••••••',
                         hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textLight),
-                        prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.primaryBlue, size: 20),
+                        prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.primaryCyan, size: 20),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -293,63 +290,56 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                         filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
+                        fillColor: AppTheme.bgDark,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.borderSubtle),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.borderSubtle),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 1.5),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppTheme.primaryCyan, width: 1.5),
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
 
                     // Primary Login Button
-                    ElevatedButton(
+                    ZzzButton(
+                      label: 'MASUK KE SISTEM NOC',
+                      icon: Icons.login_rounded,
+                      type: ZzzButtonType.cyan,
+                      isLoading: auth.isLoading,
                       onPressed: auth.isLoading ? null : _submitLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryBlue,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                      ),
-                      child: auth.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : const Text(
-                              'Masuk ke Sistem',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                            ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // GitHub OAuth Alternative
-              OutlinedButton.icon(
+              ZzzButton(
+                label: 'MASUK DENGAN GITHUB',
+                icon: Icons.code_rounded,
+                type: ZzzButtonType.muted,
                 onPressed: _launchGitHubOAuth,
-                icon: const Icon(Icons.code_rounded, size: 18),
-                label: const Text('Masuk dengan Akun GitHub'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.textMain,
-                  minimumSize: const Size.fromHeight(46),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+              ),
+              const SizedBox(height: 24),
+
+              // Version info footer
+              Text(
+                'v${AppConfig.appVersion} (BUILD ${AppConfig.appVersionCode}) // ZZZ INTERFACE',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                  color: AppTheme.textLight,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 32),
             ],
           ),
         ),

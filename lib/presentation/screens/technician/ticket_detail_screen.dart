@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../data/models/ticket_model.dart';
 import '../../providers/technician_provider.dart';
-import '../../widgets/cyber_card.dart';
+import '../../widgets/zzz_card.dart';
+import '../../widgets/zzz_badge.dart';
+import '../../widgets/zzz_button.dart';
 import '../../widgets/status_badge.dart';
 
 class TicketDetailScreen extends StatefulWidget {
@@ -39,8 +40,12 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Tandai Tiket Selesai', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.bgCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.neonCyan, width: 1.2),
+        ),
+        title: const Text('Tandai Tiket Selesai', style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,40 +55,46 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             TextField(
               controller: notesCtrl,
               maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Contoh: Sambung ulang kabel FO putus di ODP 2.',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+              decoration: const InputDecoration(
+                hintText: 'Contoh: Splicing ulang kabel dropcore patah di tiang ODP.',
+                hintStyle: TextStyle(color: AppTheme.textMuted),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.borderDark)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.neonCyan)),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal', style: TextStyle(color: AppTheme.textMuted)),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.neonCyan,
+              foregroundColor: AppTheme.bgDark,
+            ),
             onPressed: () async {
               Navigator.pop(ctx);
-              final ok = await context.read<TechnicianProvider>().resolveTicket(
+              final success = await context.read<TechnicianProvider>().resolveTicket(
                 widget.ticket.id,
-                notesCtrl.text.trim(),
+                notes: notesCtrl.text.trim(),
               );
               if (mounted) {
-                if (ok) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tiket berhasil diselesaikan!')),
-                  );
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gagal menyelesaikan tiket.')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.bgCard,
+                    content: Text(
+                      success ? 'Tiket berhasil diselesaikan!' : 'Gagal menyelesaikan tiket.',
+                      style: TextStyle(color: success ? AppTheme.neonGreen : AppTheme.crimsonRed),
+                    ),
+                  ),
+                );
+                if (success) Navigator.pop(context);
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentGreen,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Tandai Selesai'),
+            child: const Text('Konfirmasi Selesai'),
           ),
         ],
       ),
@@ -95,11 +106,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     final t = widget.ticket;
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: Text(t.ticketNumber, style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: AppTheme.textMain),
-        backgroundColor: Colors.white,
+        title: Text(t.ticketNumber, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        backgroundColor: AppTheme.bgDark,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -107,103 +117,112 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status & Customer Card
-            CyberCard(
-              margin: EdgeInsets.zero,
+            // Status Hero Card
+            ZzzCard(
+              tag: 'TICKET PROFILE',
+              borderColor: t.isUrgent ? AppTheme.crimsonRed : AppTheme.neonCyan,
+              hasGlow: t.isUrgent,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        t.customerName,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                      ZzzBadge(
+                        text: t.category.toUpperCase(),
+                        type: ZzzBadgeType.yellow,
                       ),
                       StatusBadge(status: t.status),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
-                    t.title,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
+                    t.customerName,
+                    style: const TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w900),
                   ),
-                  if (t.description != null && t.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      t.description!,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textMuted, height: 1.4),
-                    ),
-                  ],
-                  const Divider(height: 20),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on_rounded, size: 16, color: AppTheme.accentRed),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          t.customerAddress ?? 'Alamat belum terdata',
-                          style: const TextStyle(fontSize: 12, color: AppTheme.textMain),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 4),
+                  Text(
+                    'Kategori: ${t.category} • Prioritas: ${t.priority.toUpperCase()}',
+                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                   ),
-                  if (t.latitude != null && t.longitude != null) ...[
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () => _openGoogleMaps(t.latitude!, t.longitude!),
-                      icon: const Icon(Icons.directions_rounded, size: 16),
-                      label: const Text('Buka Peta / Navigasi GPS'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryBlue,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(40),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
             const SizedBox(height: 16),
 
-            // Customer Contact Actions
-            if (t.customerPhone != null && t.customerPhone!.isNotEmpty)
-              CyberCard(
-                margin: EdgeInsets.zero,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Kontak Pelanggan', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                          Text(t.customerPhone!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        ],
+            // Description Card
+            ZzzCard(
+              tag: 'PROBLEM REPORT',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Keluhan / Gejala Gangguan:', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
+                  Text(
+                    t.description.isNotEmpty ? t.description : 'Tidak ada catatan keluhan tertulis.',
+                    style: const TextStyle(color: AppTheme.textWhite, fontSize: 13, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Customer Contact & Location
+            ZzzCard(
+              tag: 'DISPATCH TARGET',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, color: AppTheme.neonCyan, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          t.customerAddress.isNotEmpty ? t.customerAddress : 'Alamat tidak tertera',
+                          style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.phone_rounded, color: AppTheme.accentGreen),
-                      onPressed: () => _callPhone(t.customerPhone!),
+                    ],
+                  ),
+                  if (t.customerPhone.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.phone_outlined, color: AppTheme.neonGreen, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(t.customerPhone, style: const TextStyle(color: AppTheme.textWhite, fontSize: 13)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.call, color: AppTheme.neonGreen, size: 20),
+                          onPressed: () => _callPhone(t.customerPhone),
+                        ),
+                      ],
                     ),
                   ],
-                ),
+                  if (t.latitude != null && t.longitude != null) ...[
+                    const SizedBox(height: 12),
+                    ZzzButton(
+                      text: 'Petunjuk Arah (Google Maps)',
+                      icon: Icons.navigation_rounded,
+                      style: ZzzButtonStyle.secondary,
+                      onPressed: () => _openGoogleMaps(t.latitude!, t.longitude!),
+                    ),
+                  ],
+                ],
               ),
+            ),
             const SizedBox(height: 24),
 
-            // Resolve Action Button
-            if (t.isOpen)
-              ElevatedButton.icon(
+            // Complete Ticket Button
+            if (t.status.toLowerCase() != 'resolved' && t.status.toLowerCase() != 'closed')
+              ZzzButton(
+                text: 'Tandai Tiket Selesai',
+                icon: Icons.check_circle_rounded,
+                style: ZzzButtonStyle.primary,
+                height: 50,
                 onPressed: _showResolveDialog,
-                icon: const Icon(Icons.check_circle_rounded),
-                label: const Text('Tandai Gangguan Telah Selesai', style: TextStyle(fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentGreen,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
               ),
           ],
         ),

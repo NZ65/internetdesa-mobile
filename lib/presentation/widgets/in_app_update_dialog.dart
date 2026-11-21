@@ -22,8 +22,8 @@ class InAppUpdateDialog extends StatefulWidget {
     required int versionCode,
     required String changelog,
     required String downloadUrl,
-  }) async {
-    await showDialog(
+  }) {
+    return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => InAppUpdateDialog(
@@ -43,42 +43,41 @@ class _InAppUpdateDialogState extends State<InAppUpdateDialog> {
   bool _isDownloading = false;
   double _progress = 0.0;
   String _statusText = '';
-  String? _errorMessage;
 
-  void _startDownload() {
+  void _startUpdate() async {
     setState(() {
       _isDownloading = true;
-      _progress = 0.0;
-      _statusText = 'Menghubungkan ke server...';
-      _errorMessage = null;
+      _statusText = 'Mengunduh paket APK sistem...';
     });
 
-    NativeUpdater.downloadAndInstall(
-      downloadUrl: widget.downloadUrl,
+    final success = await NativeUpdater.downloadAndInstallApk(
+      widget.downloadUrl,
       onProgress: (received, total) {
-        if (total > 0) {
-          final p = received / total;
-          final mbReceived = (received / (1024 * 1024)).toStringAsFixed(1);
-          final mbTotal = (total / (1024 * 1024)).toStringAsFixed(1);
+        if (total > 0 && mounted) {
           setState(() {
-            _progress = p;
-            _statusText = 'Mengunduh APK ($mbReceived MB / $mbTotal MB)... ${(p * 100).toInt()}%';
+            _progress = received / total;
+            _statusText = 'Mengunduh ${(received / (1024 * 1024)).toStringAsFixed(1)} MB / ${(total / (1024 * 1024)).toStringAsFixed(1)} MB';
           });
         }
       },
-      onError: (msg) {
-        setState(() {
-          _isDownloading = false;
-          _errorMessage = msg;
-        });
-      },
     );
+
+    if (!success && mounted) {
+      setState(() {
+        _isDownloading = false;
+        _statusText = 'Gagal mengunduh APK. Coba beberapa saat lagi.';
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: AppTheme.bgCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -90,10 +89,11 @@ class _InAppUpdateDialogState extends State<InAppUpdateDialog> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.12),
-                    shape: BoxShape.circle,
+                    color: AppTheme.neonCyan.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.neonCyan.withOpacity(0.4)),
                   ),
-                  child: const Icon(Icons.system_update_rounded, color: AppTheme.primaryBlue, size: 28),
+                  child: const Icon(Icons.system_update_rounded, color: AppTheme.neonCyan, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -101,12 +101,21 @@ class _InAppUpdateDialogState extends State<InAppUpdateDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Pembaruan Tersedia',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                        'PEMBARUAN SISTEM',
+                        style: TextStyle(
+                          color: AppTheme.neonCyan,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                       Text(
                         'Versi ${widget.latestVersion} (Build ${widget.versionCode})',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.primaryBlue, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: AppTheme.textWhite,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
@@ -114,65 +123,63 @@ class _InAppUpdateDialogState extends State<InAppUpdateDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Catatan Pembaruan:',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textMuted),
-            ),
-            const SizedBox(height: 6),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                color: AppTheme.bgDark,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.borderDark),
               ),
-              child: Text(
-                widget.changelog,
-                style: const TextStyle(fontSize: 12, color: AppTheme.textMain, height: 1.4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Catatan Pembaruan:',
+                    style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.changelog,
+                    style: const TextStyle(color: AppTheme.textSilver, fontSize: 12),
+                  ),
+                ],
               ),
             ),
             if (_isDownloading) ...[
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               LinearProgressIndicator(
-                value: _progress > 0 ? _progress : null,
-                backgroundColor: const Color(0xFFE2E8F0),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
+                value: _progress,
+                backgroundColor: AppTheme.bgDark,
+                color: AppTheme.neonCyan,
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(3),
               ),
               const SizedBox(height: 8),
               Text(
                 _statusText,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.w500),
+                style: const TextStyle(color: AppTheme.neonCyan, fontSize: 11, fontWeight: FontWeight.w600),
               ),
             ],
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                '⚠️ $_errorMessage',
-                style: const TextStyle(fontSize: 11, color: AppTheme.accentRed),
-              ),
-            ],
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (!_isDownloading)
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Nanti Saja', style: TextStyle(color: AppTheme.textMuted)),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Nanti Saja', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                   ),
                 const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _isDownloading ? null : _startDownload,
+                ElevatedButton.icon(
+                  onPressed: _isDownloading ? null : _startUpdate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    backgroundColor: AppTheme.neonCyan,
+                    foregroundColor: AppTheme.bgDark,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text(_isDownloading ? 'Mengunduh...' : 'Perbarui Sekarang'),
+                  icon: const Icon(Icons.download_rounded, size: 18),
+                  label: Text(_isDownloading ? 'Mengunduh...' : 'Update Langsung'),
                 ),
               ],
             ),

@@ -6,7 +6,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../../core/utils/formatters.dart';
 import '../../providers/expense_provider.dart';
-import '../../widgets/cyber_card.dart';
+import '../../widgets/zzz_card.dart';
+import '../../widgets/zzz_badge.dart';
+import '../../widgets/zzz_button.dart';
 import '../../widgets/empty_state.dart';
 
 class ExpenseLedgerScreen extends StatefulWidget {
@@ -39,14 +41,12 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
     final notesCtrl = TextEditingController();
     String type = 'out';
     String category = 'operasional';
-    String paymentSource = 'Kas Operasional';
-    String paymentMethod = 'cash';
     File? receiptImage;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.bgCard,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (modalCtx, setModalState) => Padding(
@@ -58,43 +58,41 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Catat Transaksi Kas',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                  children: const [
+                    Text(
+                      'CATAT TRANSAKSI KAS',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.textWhite, letterSpacing: 0.8),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE0F2FE),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text('AUTO TELEGRAM 874', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                    ZzzBadge(
+                      text: 'TELEGRAM TOPIC 874',
+                      type: ZzzBadgeType.cyan,
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-                // Tipe Transaksi
+                // Tipe Transaksi (Out / In)
                 Row(
                   children: [
                     Expanded(
                       child: ChoiceChip(
-                        label: const Center(child: Text('Pengeluaran (Out)')),
+                        label: const Center(child: Text('PENGELUARAN (OUT)', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11))),
                         selected: type == 'out',
                         onSelected: (_) => setModalState(() => type = 'out'),
-                        selectedColor: AppTheme.accentRed,
-                        labelStyle: TextStyle(color: type == 'out' ? Colors.white : AppTheme.textMain, fontWeight: FontWeight.bold),
+                        selectedColor: AppTheme.crimsonRed,
+                        backgroundColor: AppTheme.bgDark,
+                        labelStyle: TextStyle(color: type == 'out' ? Colors.white : AppTheme.textMuted),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: ChoiceChip(
-                        label: const Center(child: Text('Pemasukan (In)')),
+                        label: const Center(child: Text('PEMASUKAN (IN)', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11))),
                         selected: type == 'in',
                         onSelected: (_) => setModalState(() => type = 'in'),
-                        selectedColor: AppTheme.accentGreen,
-                        labelStyle: TextStyle(color: type == 'in' ? Colors.white : AppTheme.textMain, fontWeight: FontWeight.bold),
+                        selectedColor: AppTheme.neonGreen,
+                        backgroundColor: AppTheme.bgDark,
+                        labelStyle: TextStyle(color: type == 'in' ? AppTheme.bgDark : AppTheme.textMuted),
                       ),
                     ),
                   ],
@@ -103,11 +101,16 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
 
                 TextField(
                   controller: nameCtrl,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Nama Keperluan / Barang *',
-                    hintText: 'Contoh: Beli Patch Cord, Bensin Patroli',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    labelStyle: const TextStyle(color: AppTheme.textMuted),
+                    hintText: 'Contoh: Patch cord, bensin patroli',
+                    hintStyle: const TextStyle(color: AppTheme.textDark),
+                    filled: true,
+                    fillColor: AppTheme.bgDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -115,28 +118,36 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
                 TextField(
                   controller: amountCtrl,
                   keyboardType: TextInputType.number,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Nominal Rupiah (Rp) *',
-                    hintText: '50000',
+                    labelStyle: const TextStyle(color: AppTheme.textMuted),
                     prefixText: 'Rp ',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    prefixStyle: const TextStyle(color: AppTheme.neonCyan, fontWeight: FontWeight.bold),
+                    filled: true,
+                    fillColor: AppTheme.bgDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
                   ),
                 ),
                 const SizedBox(height: 12),
 
-                // Kategori Dropdown
                 DropdownButtonFormField<String>(
                   value: category,
+                  dropdownColor: AppTheme.bgCard,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Kategori Pengeluaran',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    labelStyle: const TextStyle(color: AppTheme.textMuted),
+                    filled: true,
+                    fillColor: AppTheme.bgDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'operasional', child: Text('Operasional Kantor / Lapangan')),
+                    DropdownMenuItem(value: 'operasional', child: Text('Operasional Lapangan')),
                     DropdownMenuItem(value: 'capex', child: Text('Belanja Modal / Perangkat (Capex)')),
-                    DropdownMenuItem(value: 'fee_tim', child: Text('Fee Teknisi / Sales')),
+                    DropdownMenuItem(value: 'fee_tim', child: Text('Fee Teknisi / Tim')),
                     DropdownMenuItem(value: 'opex', child: Text('Biaya Rutin (Opex)')),
                     DropdownMenuItem(value: 'bandwidth', child: Text('Biaya Bandwidth ISP')),
                     DropdownMenuItem(value: 'lainnya', child: Text('Lain-lain')),
@@ -147,62 +158,76 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
 
                 TextField(
                   controller: recipientCtrl,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Penerima / Toko (Opsional)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    labelStyle: const TextStyle(color: AppTheme.textMuted),
+                    filled: true,
+                    fillColor: AppTheme.bgDark,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
                   ),
                 ),
                 const SizedBox(height: 12),
 
-                // Foto Nota / Struk (Kamera / Galeri)
+                // Foto Nota / Struk
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    color: AppTheme.bgDark,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.borderDark),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         receiptImage != null ? Icons.check_circle_rounded : Icons.receipt_rounded,
-                        color: receiptImage != null ? AppTheme.accentGreen : AppTheme.primaryBlue,
-                        size: 28,
+                        color: receiptImage != null ? AppTheme.neonGreen : AppTheme.neonCyan,
+                        size: 24,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              receiptImage != null ? 'Struk Nota Terlampir ✓' : 'Foto Struk Nota Belanja',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-                            ),
-                            const Text('Otomatis dikirim ke grup Telegram kas', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                          ],
+                        child: Text(
+                          receiptImage != null ? 'Struk Nota Terlampir ✓' : 'Lampirkan Foto Struk / Nota',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: receiptImage != null ? AppTheme.neonGreen : AppTheme.textSilver,
+                          ),
                         ),
                       ),
-                      TextButton.icon(
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt_rounded, color: AppTheme.neonCyan, size: 20),
                         onPressed: () async {
                           final picker = ImagePicker();
-                          final picked = await picker.pickImage(source: ImageSource.camera, imageQuality: 75);
+                          final picked = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
                           if (picked != null) {
                             setModalState(() => receiptImage = File(picked.path));
                           }
                         },
-                        icon: const Icon(Icons.camera_alt_rounded, size: 16),
-                        label: const Text('Foto', style: TextStyle(fontSize: 12)),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.photo_library_rounded, color: AppTheme.hazardYellow, size: 20),
+                        onPressed: () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                          if (picked != null) {
+                            setModalState(() => receiptImage = File(picked.path));
+                          }
+                        },
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                ElevatedButton(
+                ZzzButton(
+                  text: 'Simpan & Broadcast Telegram',
+                  icon: Icons.send_rounded,
+                  style: ZzzButtonStyle.primary,
                   onPressed: () async {
                     final name = nameCtrl.text.trim();
-                    final amount = num.tryParse(amountCtrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+                    final amount = double.tryParse(amountCtrl.text.trim()) ?? 0;
                     if (name.isEmpty || amount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Nama keperluan dan nominal wajib diisi!')),
@@ -210,30 +235,27 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
                       return;
                     }
                     Navigator.pop(ctx);
-                    final ok = await context.read<ExpenseProvider>().addExpense(
-                      itemName: name,
+                    final ok = await context.read<ExpenseProvider>().createExpense(
+                      title: name,
                       amount: amount,
                       type: type,
                       category: category,
-                      paymentSource: paymentSource,
-                      paymentMethod: paymentMethod,
                       recipient: recipientCtrl.text.trim(),
                       notes: notesCtrl.text.trim(),
-                      receiptImage: receiptImage,
+                      receiptFile: receiptImage,
                     );
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(ok ? '✅ Transaksi berhasil dicatat & disiarkan ke Telegram!' : 'Gagal mencatat transaksi.')),
+                        SnackBar(
+                          backgroundColor: AppTheme.bgCard,
+                          content: Text(
+                            ok ? 'Transaksi kas berhasil dicatat & dibroadcast!' : 'Gagal menyimpan transaksi.',
+                            style: TextStyle(color: ok ? AppTheme.neonGreen : AppTheme.crimsonRed),
+                          ),
+                        ),
                       );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Simpan & Siarkan ke Telegram', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -248,122 +270,73 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
     final expProv = context.watch<ExpenseProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: const Text('Buku Kas Keuangan', style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: AppTheme.textMain),
-        backgroundColor: Colors.white,
+        title: const Text('BUKU KAS KEUANGAN', style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        backgroundColor: AppTheme.bgDark,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_rounded, color: AppTheme.primaryBlue, size: 26),
+            icon: const Icon(Icons.add_circle_outline_rounded, color: AppTheme.neonCyan),
             onPressed: _showAddExpenseModal,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Saldo Summary Header Card
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryBlue, AppTheme.primaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: AppTheme.cyberGlow,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('TOTAL SALDO KAS TERSEDIA', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Text(
-                    Formatters.formatRupiah(expProv.saldoTersisa),
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
-                  ),
-                  const Divider(color: Colors.white24, height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Sisa Modal Awal', style: TextStyle(color: Colors.white70, fontSize: 10)),
-                          Text(Formatters.formatCompactRupiah(expProv.sisaModal), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('Sisa Kas Ops Sukorejo', style: TextStyle(color: Colors.white70, fontSize: 10)),
-                          Text(Formatters.formatCompactRupiah(expProv.sisaKasOps), style: const TextStyle(color: AppTheme.techCyan, fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // Filter Row
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Row(
               children: [
-                _buildTypeChip('all', 'Semua Transaksi'),
+                _buildFilterButton('Semua', 'all'),
                 const SizedBox(width: 8),
-                _buildTypeChip('out', 'Pengeluaran (Out)'),
+                _buildFilterButton('Pengeluaran', 'out'),
                 const SizedBox(width: 8),
-                _buildTypeChip('in', 'Pemasukan (In)'),
+                _buildFilterButton('Pemasukan', 'in'),
               ],
             ),
           ),
 
-          // Transactions List
+          // Transaction List
           Expanded(
-            child: expProv.isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
-                : expProv.transactions.isEmpty
-                    ? EmptyState(
-                        icon: Icons.account_balance_wallet_outlined,
+            child: expProv.isLoading && expProv.expenses.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.neonCyan))
+                : expProv.expenses.isEmpty
+                    ? const EmptyState(
+                        icon: Icons.receipt_long_rounded,
                         title: 'Belum Ada Transaksi',
-                        message: 'Belum ada catatan transaksi kas untuk filter ini.',
-                        onRetry: () => expProv.fetchExpenses(type: _selectedType),
+                        message: 'Riwayat pencatatan kas operasional masih kosong.',
                       )
                     : RefreshIndicator(
                         onRefresh: () => expProv.fetchExpenses(type: _selectedType),
-                        color: AppTheme.primaryBlue,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: expProv.transactions.length,
-                          itemBuilder: (ctx, idx) {
-                            final tx = expProv.transactions[idx];
-                            final isOut = tx.isExpense;
+                        color: AppTheme.neonCyan,
+                        backgroundColor: AppTheme.bgCard,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                          itemCount: expProv.expenses.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final tx = expProv.expenses[index];
+                            final isOut = tx.type.toLowerCase() == 'out' || tx.type.toLowerCase() == 'expense';
 
-                            return CyberCard(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            return ZzzCard(
                               padding: const EdgeInsets.all(14),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: isOut ? AppTheme.pastelRed : AppTheme.pastelGreen,
-                                      borderRadius: BorderRadius.circular(12),
+                                      color: isOut ? AppTheme.crimsonRed.withOpacity(0.12) : AppTheme.neonGreen.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isOut ? AppTheme.crimsonRed.withOpacity(0.4) : AppTheme.neonGreen.withOpacity(0.4),
+                                      ),
                                     ),
                                     child: Icon(
                                       isOut ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                                      color: isOut ? AppTheme.accentRed : AppTheme.accentGreen,
-                                      size: 18,
+                                      color: isOut ? AppTheme.crimsonRed : AppTheme.neonGreen,
+                                      size: 20,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -372,36 +345,24 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          tx.itemName,
-                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                                          tx.title,
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textWhite),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${Formatters.formatShortDate(tx.transactionDate)} • ${tx.category.toUpperCase()}',
+                                          '${Formatters.formatDateTime(tx.createdAt)} • ${tx.category}',
                                           style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                                         ),
-                                        if (tx.recipient != null && tx.recipient!.isNotEmpty)
-                                          Text('Penerima: ${tx.recipient}', style: const TextStyle(fontSize: 10, color: AppTheme.textLight)),
                                       ],
                                     ),
                                   ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '${isOut ? "- " : "+ "}${Formatters.formatRupiah(tx.amount)}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w900,
-                                          color: isOut ? AppTheme.accentRed : AppTheme.accentGreen,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        tx.paymentMethod.toUpperCase(),
-                                        style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppTheme.textLight),
-                                      ),
-                                    ],
+                                  Text(
+                                    '${isOut ? "- " : "+ "}${Formatters.formatRupiah(tx.amount)}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w900,
+                                      color: isOut ? AppTheme.crimsonRed : AppTheme.neonGreen,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -412,34 +373,37 @@ class _ExpenseLedgerScreenState extends State<ExpenseLedgerScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddExpenseModal,
-        backgroundColor: AppTheme.primaryBlue,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Catat Kas', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
     );
   }
 
-  Widget _buildTypeChip(String type, String label) {
+  Widget _buildFilterButton(String label, String type) {
     final isSelected = _selectedType == type;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        SoundEffects.playTap();
-        setState(() => _selectedType = type);
-        context.read<ExpenseProvider>().fetchExpenses(type: type);
-      },
-      selectedColor: AppTheme.primaryBlue,
-      backgroundColor: const Color(0xFFF1F5F9),
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppTheme.textMain,
-        fontSize: 11,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          SoundEffects.playTap();
+          setState(() => _selectedType = type);
+          context.read<ExpenseProvider>().fetchExpenses(type: type);
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.neonCyan.withOpacity(0.15) : AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? AppTheme.neonCyan : AppTheme.borderDark),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              color: isSelected ? AppTheme.neonCyan : AppTheme.textMuted,
+            ),
+          ),
+        ),
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      showCheckmark: false,
     );
   }
 }

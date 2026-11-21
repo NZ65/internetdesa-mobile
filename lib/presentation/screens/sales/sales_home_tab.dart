@@ -5,12 +5,11 @@ import '../../../core/theme/sound_effects.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/sales_provider.dart';
-import '../../widgets/blue_archive_stage.dart';
-import '../../widgets/cyber_card.dart';
-import '../../widgets/dana_curved_header.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/squircle_action_button.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/zzz_badge.dart';
+import '../../widgets/zzz_button.dart';
+import '../../widgets/zzz_card.dart';
 import 'register_prospect_screen.dart';
 
 class SalesHomeTab extends StatefulWidget {
@@ -36,164 +35,252 @@ class _SalesHomeTabState extends State<SalesHomeTab> {
     final dashProv = context.watch<DashboardProvider>();
     final salesProv = context.watch<SalesProvider>();
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        await Future.wait([
-          dashProv.fetchDashboard(),
-          salesProv.fetchRegistrations(),
-        ]);
-      },
-      color: AppTheme.primaryBlue,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Curved DANA & Blue Archive Header
-            DanaCurvedHeader(
-              userName: auth.user?.name ?? 'Sales',
-              role: 'TIM SALES LAPANGAN',
-              areaName: auth.user?.areaName ?? 'Sukorejo',
-              saldoKas: dashProv.dashboard?.saldoKas ?? 0,
-              sisaModal: dashProv.dashboard?.sisaModal,
-              sisaKasOps: dashProv.dashboard?.sisaKasOps,
-            ),
+    final installedCount = salesProv.registrations.where((r) => r.status == 'installed').length;
+    final pendingCount = salesProv.registrations.where((r) => r.status == 'pending').length;
 
-            // Blue Archive SCHALE Tactical Terminal & MomoTalk
-            BlueArchiveStage(
-              hasAlert: dashProv.hasAlert,
-              losCount: dashProv.losCount,
-              userName: auth.user?.name ?? 'Sales',
-            ),
+    return Scaffold(
+      backgroundColor: AppTheme.bgDark,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.wait([
+            dashProv.fetchDashboard(),
+            salesProv.fetchRegistrations(),
+          ]);
+        },
+        color: AppTheme.primaryCyan,
+        backgroundColor: AppTheme.bgCardElevated,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, kToolbarHeight + 8, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Tactical Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primaryCyan,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'FIELD SALES // ${auth.user?.areaName?.toUpperCase() ?? "SUKOREJO"}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'monospace',
+                              color: AppTheme.primaryCyan,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        auth.user?.name ?? 'Sales Officer',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.textMain,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const ZzzBadge(label: 'ONLINE', type: ZzzBadgeType.success),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            // Quick Actions & Registrations Summary
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: CyberCard(
-                padding: const EdgeInsets.all(16),
+              // Tactical Telemetry HUD Card
+              ZzzCard(
+                tag: 'SALES METRICS',
+                isAccent: true,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    SquircleActionButton(
-                      code: '01',
-                      icon: Icons.person_add_alt_1_rounded,
-                      label: 'Daftar Baru',
-                      iconColor: AppTheme.primaryBlue,
-                      backgroundColor: const Color(0xFFE0F2FE),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RegisterProspectScreen()),
-                        );
-                      },
-                    ),
-                    SquircleActionButton(
-                      code: '02',
-                      icon: Icons.inventory_2_rounded,
-                      label: 'Paket Internet',
-                      iconColor: AppTheme.accentOrange,
-                      backgroundColor: AppTheme.pastelOrange,
-                      badgeText: '${salesProv.packages.length}',
-                      onTap: () {
-                        // View packages
-                      },
-                    ),
-                    SquircleActionButton(
-                      code: '03',
-                      icon: Icons.task_alt_rounded,
-                      label: 'Terpasang',
-                      iconColor: AppTheme.accentGreen,
-                      backgroundColor: AppTheme.pastelGreen,
-                      badgeText: '${salesProv.registrations.where((r) => r.status == "installed").length}',
-                      onTap: () {},
-                    ),
-                    SquircleActionButton(
-                      code: '04',
-                      icon: Icons.hourglass_top_rounded,
-                      label: 'Antrean',
-                      iconColor: AppTheme.accentPurple,
-                      backgroundColor: AppTheme.pastelPurple,
-                      badgeText: '${salesProv.registrations.where((r) => r.status == "pending").length}',
-                      onTap: () {},
-                    ),
+                    _buildMetricCol('TOTAL INPUT', '${salesProv.registrations.length}', AppTheme.primaryCyan),
+                    Container(width: 1, height: 40, color: AppTheme.borderSubtle),
+                    _buildMetricCol('DISETUJUI / AKTIF', '$installedCount', AppTheme.accentGreen),
+                    Container(width: 1, height: 40, color: AppTheme.borderSubtle),
+                    _buildMetricCol('ANTREAN TEKNISI', '$pendingCount', AppTheme.accentYellow),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(height: 16),
 
-            // Header Antrean Pasang Baru
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'RIWAYAT PENDAFTARAN SAYA',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textMain,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  Text(
-                    '${salesProv.registrations.length} Pengajuan',
-                    style: const TextStyle(fontSize: 12, color: AppTheme.primaryBlue, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-
-            // Registrations List
-            if (salesProv.isLoading)
-              const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
-            else if (salesProv.registrations.isEmpty)
-              const EmptyState(
-                icon: Icons.assignment_outlined,
-                title: 'Belum Ada Pendaftaran',
-                message: 'Silakan daftarkan calon pelanggan baru melalui tombol di atas.',
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: salesProv.registrations.length,
-                itemBuilder: (ctx, idx) {
-                  final r = salesProv.registrations[idx];
-                  return CyberCard(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              r.name,
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-                            ),
-                            StatusBadge(status: r.status),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${r.phone} • Paket ${r.packageName ?? "Reguler"}',
-                          style: const TextStyle(fontSize: 12, color: AppTheme.primaryBlue, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          r.address,
-                          style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                        ),
-                      ],
-                    ),
+              // Action Tile: Register Prospect
+              ZzzButton(
+                label: '+ DAFTARKAN CALON PELANGGAN',
+                icon: Icons.person_add_alt_1_rounded,
+                type: ZzzButtonType.cyan,
+                onPressed: () {
+                  SoundEffects.playTap();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const RegisterProspectScreen()),
                   );
                 },
               ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 20),
+
+              // Header Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'DAFTAR PENGAJUAN SAYA',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'monospace',
+                      color: AppTheme.textMuted,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  Text(
+                    '${salesProv.registrations.length} REKORD',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                      color: AppTheme.primaryCyan,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Registrations Stream
+              if (salesProv.isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(color: AppTheme.primaryCyan),
+                  ),
+                )
+              else if (salesProv.registrations.isEmpty)
+                const EmptyState(
+                  icon: Icons.assignment_outlined,
+                  title: 'Belum Ada Pendaftaran',
+                  message: 'Silakan klik tombol di atas untuk mendaftarkan calon pelanggan baru.',
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: salesProv.registrations.length,
+                  itemBuilder: (ctx, idx) {
+                    final r = salesProv.registrations[idx];
+                    return ZzzCard(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  r.name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textMain,
+                                  ),
+                                ),
+                              ),
+                              StatusBadge(status: r.status),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.phone_android_rounded, size: 14, color: AppTheme.primaryCyan),
+                              const SizedBox(width: 6),
+                              Text(
+                                r.phone,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textMain,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Icon(Icons.wifi_rounded, size: 14, color: AppTheme.accentYellow),
+                              const SizedBox(width: 4),
+                              Text(
+                                r.packageName ?? 'Reguler',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.accentYellow,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.textMuted),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  r.address,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppTheme.textMuted,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMetricCol(String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMuted,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'monospace',
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -11,7 +11,6 @@ import 'admin/admin_home_tab.dart';
 import 'admin/customer_list_screen.dart';
 import 'admin/expense_ledger_screen.dart';
 import 'technician/technician_home_tab.dart';
-import 'technician/ticket_detail_screen.dart';
 import 'technician/odp_map_screen.dart';
 import 'technician/quick_tools_screen.dart';
 import 'sales/sales_home_tab.dart';
@@ -45,9 +44,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
     if (remoteCode > AppConfig.appVersionCode) {
       InAppUpdateDialog.show(
         context,
-        latestVersion: updateData['latest_version'] ?? '1.5.8',
+        latestVersion: updateData['latest_version'] ?? '1.7.0',
         versionCode: remoteCode,
-        changelog: updateData['changelog'] ?? 'Pembaruan sistem & peningkatan performa.',
+        changelog: updateData['changelog'] ?? 'Pembaruan antarmuka Zenless Zone Zero (ZZZ) & optimasi performa.',
         downloadUrl: updateData['download_url'] ?? '${AppConfig.defaultBaseUrl}/downloads/internetdesa.apk',
       );
     }
@@ -70,7 +69,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final isTeknisi = user?.isTechnician == true;
     final isSales = user?.isSales == true;
 
-    // Build role-tailored view tabs
+    // Role-tailored view tabs
     final List<Widget> screens = isTeknisi
         ? [
             const TechnicianHomeTab(),
@@ -92,64 +91,79 @@ class _MainShellScreenState extends State<MainShellScreen> {
               ]);
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       body: IndexedStack(
         index: _currentIndex < screens.length ? _currentIndex : 0,
         children: screens,
       ),
 
-      // Raised Center FAB (⚡) for Quick NOC Diagnostic Tools (for Admin & Teknisi)
+      // Raised Center FAB (⚡) - ZZZ Neon Cyan Lightning Bolt
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: (!isSales)
           ? FloatingActionButton(
               onPressed: _showQuickToolsModal,
-              backgroundColor: AppTheme.primaryBlue,
-              elevation: 4,
+              backgroundColor: AppTheme.neonCyan,
+              elevation: 8,
               shape: const CircleBorder(),
               child: Container(
                 width: 56,
                 height: 56,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF00E5FF), AppTheme.primaryBlue],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF80FFFF), AppTheme.neonCyan],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.neonCyan.withOpacity(0.5),
+                      blurRadius: 18,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.bolt, color: Colors.white, size: 28),
+                child: const Icon(Icons.bolt, color: AppTheme.bgDark, size: 30),
               ),
             )
           : null,
 
-      // DANA Floating Frosted Bottom Bar
-      bottomNavigationBar: BottomAppBar(
-        shape: (!isSales) ? const CircularNotchedRectangle() : null,
-        notchMargin: 8,
-        color: Colors.white,
-        elevation: 12,
-        height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.home_rounded, 'Beranda'),
-            if (isTeknisi)
-              _buildNavItem(1, Icons.alt_route_rounded, 'ODP Map')
-            else if (isSales)
-              _buildNavItem(1, Icons.person_add_alt_1_rounded, 'Daftar Baru')
-            else
-              _buildNavItem(1, Icons.people_alt_rounded, 'Pelanggan'),
+      // ZZZ Matte Carbon Bottom Navigation Bar
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.bgSurface,
+          border: Border(
+            top: BorderSide(color: AppTheme.borderDark, width: 1.2),
+          ),
+        ),
+        child: BottomAppBar(
+          shape: (!isSales) ? const CircularNotchedRectangle() : null,
+          notchMargin: 8,
+          color: Colors.transparent,
+          elevation: 0,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.grid_view_rounded, 'BERANDA'),
+              if (isTeknisi)
+                _buildNavItem(1, Icons.alt_route_rounded, 'ODP MAP')
+              else if (isSales)
+                _buildNavItem(1, Icons.person_add_alt_1_rounded, 'DAFTAR')
+              else
+                _buildNavItem(1, Icons.group_rounded, 'PELANGGAN'),
 
-            if (!isSales) const SizedBox(width: 48), // Center spacing for FAB
+              if (!isSales) const SizedBox(width: 48), // Center spacing for FAB
 
-            if (isTeknisi)
-              _buildNavItem(2, Icons.build_circle_rounded, 'Tools')
-            else if (!isSales)
-              _buildNavItem(2, Icons.account_balance_wallet_rounded, 'Buku Kas'),
+              if (isTeknisi)
+                _buildNavItem(2, Icons.build_circle_rounded, 'TOOLS')
+              else if (!isSales)
+                _buildNavItem(2, Icons.account_balance_wallet_rounded, 'KAS'),
 
-            _buildNavItem(isSales ? 2 : 3, Icons.person_rounded, 'Profil'),
-          ],
+              _buildNavItem(isSales ? 2 : 3, Icons.person_rounded, 'PROFIL'),
+            ],
+          ),
         ),
       ),
     );
@@ -164,22 +178,24 @@ class _MainShellScreenState extends State<MainShellScreen> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
               size: 22,
-              color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
+              color: isSelected ? AppTheme.neonCyan : AppTheme.textMuted,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? AppTheme.primaryBlue : AppTheme.textMuted,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                color: isSelected ? AppTheme.neonCyan : AppTheme.textMuted,
+                letterSpacing: 0.8,
               ),
             ),
           ],

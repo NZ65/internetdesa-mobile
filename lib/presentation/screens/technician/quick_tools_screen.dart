@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../providers/technician_provider.dart';
-import '../../widgets/cyber_card.dart';
+import '../../widgets/zzz_card.dart';
+import '../../widgets/zzz_badge.dart';
+import '../../widgets/zzz_button.dart';
 import '../../widgets/empty_state.dart';
 
 class QuickToolsScreen extends StatefulWidget {
@@ -47,19 +49,17 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
     final techProv = context.watch<TechnicianProvider>();
 
     final content = Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: const Text('Diagnosa & Troubleshooting NOC', style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16)),
-        iconTheme: const IconThemeData(color: AppTheme.textMain),
-        backgroundColor: Colors.white,
+        title: const Text('DIAGNOSA & NOC TOOLS', style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        backgroundColor: AppTheme.bgDark,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryBlue,
+          labelColor: AppTheme.neonCyan,
           unselectedLabelColor: AppTheme.textMuted,
-          indicatorColor: AppTheme.primaryBlue,
+          indicatorColor: AppTheme.neonCyan,
           indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           tabs: const [
             Tab(icon: Icon(Icons.wifi_tethering_rounded, size: 18), text: 'Ping Latensi'),
             Tab(icon: Icon(Icons.warning_amber_rounded, size: 18), text: 'Daftar LOS'),
@@ -70,207 +70,207 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
       body: TabBarView(
         controller: _tabController,
         children: [
-          // 1. Ping Tool View
-          SingleChildScrollView(
+          // 1. Tab Ping Tool
+          ListView(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CyberCard(
-                  margin: EdgeInsets.zero,
+            children: [
+              ZzzCard(
+                tag: 'ICMP PING TEST',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Uji Latensi Host / IP Pelanggan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.textWhite)),
+                    const SizedBox(height: 4),
+                    const Text('Kirim 4 paket ICMP untuk mengecek latensi & packet loss.', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _pingTargetCtrl,
+                            style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: '8.8.8.8 atau 10.30.x.x',
+                              hintStyle: const TextStyle(color: AppTheme.textMuted),
+                              filled: true,
+                              fillColor: AppTheme.bgDark,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ZzzButton(
+                          text: 'Ping',
+                          width: 80,
+                          height: 44,
+                          isLoading: techProv.isPinging,
+                          onPressed: () {
+                            final target = _pingTargetCtrl.text.trim();
+                            if (target.isNotEmpty) {
+                              techProv.pingHost(target);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (techProv.pingResult != null)
+                ZzzCard(
+                  tag: 'CONSOLE OUTPUT',
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Uji Latensi Host / IP', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
-                      const SizedBox(height: 4),
-                      const Text('Kirim 4 paket ICMP untuk mengecek latensi & packet loss.', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                      const SizedBox(height: 12),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _pingTargetCtrl,
-                              decoration: InputDecoration(
-                                hintText: 'Contoh: 8.8.8.8 atau 10.10.10.4',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: techProv.isPinging
-                                ? null
-                                : () => techProv.runPing(_pingTargetCtrl.text),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryBlue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: techProv.isPinging
-                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Text('Ping'),
+                          const Text('HASIL UJI LATENSI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppTheme.neonCyan)),
+                          ZzzBadge(
+                            text: techProv.pingResult!['success'] == true ? 'REACHABLE' : 'UNREACHABLE',
+                            type: techProv.pingResult!['success'] == true ? ZzzBadgeType.green : ZzzBadgeType.red,
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgDark,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.borderDark),
+                        ),
+                        child: Text(
+                          techProv.pingResult!['output'] ?? 'Tidak ada data respons ping.',
+                          style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: AppTheme.neonGreen),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                if (techProv.pingResult != null)
-                  CyberCard(
-                    margin: EdgeInsets.zero,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Hasil: ${_pingTargetCtrl.text}',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: techProv.pingResult?['packet_loss'] == '0%' ? AppTheme.pastelGreen : AppTheme.pastelRed,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Loss: ${techProv.pingResult?['packet_loss'] ?? "0%"}',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: techProv.pingResult?['packet_loss'] == '0%' ? AppTheme.accentGreen : AppTheme.accentRed,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Rata-rata Latensi: ${techProv.pingResult?['avg_latency'] ?? "-"}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryBlue),
-                        ),
-                        const Divider(height: 16),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            techProv.pingResult?['raw_output'] ?? '',
-                            style: const TextStyle(fontFamily: 'monospace', fontSize: 10.5, color: Color(0xFF38BDF8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
 
-          // 2. Daftar Pelanggan LOS View
-          techProv.losOnus.isEmpty
-              ? EmptyState(
-                  icon: Icons.check_circle_outline_rounded,
-                  title: 'Tidak Ada Pelanggan LOS',
-                  message: 'Semua kabel optik dan ONU dalam keadaan normal & terhubung.',
-                  onRetry: () => techProv.fetchLosOnus(),
-                )
-              : RefreshIndicator(
-                  onRefresh: () => techProv.fetchLosOnus(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: techProv.losOnus.length,
-                    itemBuilder: (ctx, idx) {
-                      final item = techProv.losOnus[idx];
-                      return CyberCard(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.pastelRed,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.warning_amber_rounded, color: AppTheme.accentRed, size: 20),
+          // 2. Tab Daftar LOS Live
+          RefreshIndicator(
+            onRefresh: () => techProv.fetchLosOnus(),
+            color: AppTheme.neonCyan,
+            backgroundColor: AppTheme.bgCard,
+            child: techProv.isLoading && techProv.losOnus.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.neonCyan))
+                : techProv.losOnus.isEmpty
+                    ? const EmptyState(
+                        icon: Icons.check_circle_outline_rounded,
+                        title: 'Tidak Ada Pelanggan LOS',
+                        message: 'Semua koneksi kabel optik OLT Sukorejo terpantau online normal.',
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: techProv.losOnus.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final onu = techProv.losOnus[index];
+                          return ZzzCard(
+                            borderColor: AppTheme.crimsonRed,
+                            hasGlow: true,
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.crimsonRed.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: AppTheme.crimsonRed.withOpacity(0.4)),
+                                  ),
+                                  child: const Icon(Icons.warning_amber_rounded, color: AppTheme.crimsonRed, size: 22),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        onu['name'] ?? onu['onu_sn'] ?? 'ONU Tidak Dikenal',
+                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textWhite),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'SN: ${onu['serial_number'] ?? onu['onu_sn'] ?? "-"} • PON ${onu['olt_port'] ?? "-"}',
+                                        style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ZzzBadge(
+                                  text: 'LOS',
+                                  type: ZzzBadgeType.red,
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['name'] ?? 'ONU ${item['onu_id']}',
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Port ${item['port']} • SN: ${item['serial_number'] ?? "-"}',
-                                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                                  ),
-                                  Text(
-                                    'Penyebab: ${item['down_reason'] ?? "LOS Optical Signal Lost"}',
-                                    style: const TextStyle(fontSize: 10, color: AppTheme.accentRed, fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                          );
+                        },
+                      ),
+          ),
 
-          // 3. Kick PPPoE Session View
-          SingleChildScrollView(
+          // 3. Tab PPPoE Kick Tool
+          ListView(
             padding: const EdgeInsets.all(16),
-            child: CyberCard(
-              margin: EdgeInsets.zero,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Reset Sesi PPPoE Pelanggan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
-                  const SizedBox(height: 4),
-                  const Text('Putuskan sesi aktif agar pelanggan dial-up ulang dan mendapatkan IP segar.', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _kickUsernameCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Username PPPoE Pelanggan',
-                      hintText: 'Contoh: 0001SUWITNO',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              ZzzCard(
+                tag: 'MIKROTIK PPPOE SESSION RESET',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Reset Sesi PPPoE Pelanggan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.textWhite)),
+                    const SizedBox(height: 4),
+                    const Text('Putuskan sesi aktif di router MikroTik agar modem dial-up ulang dan mendapat IP baru.', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _kickUsernameCtrl,
+                      style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                      decoration: InputDecoration(
+                        labelText: 'Username PPPoE (Contoh: 0001SUWITNO)',
+                        labelStyle: const TextStyle(color: AppTheme.textMuted),
+                        filled: true,
+                        fillColor: AppTheme.bgDark,
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final u = _kickUsernameCtrl.text.trim();
-                      if (u.isEmpty) return;
-                      SoundEffects.playTap();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Mengirim sinyal reset untuk $u...')),
-                      );
-                    },
-                    icon: const Icon(Icons.power_settings_new_rounded),
-                    label: const Text('Reset / Kick Sesi MikroTik'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentOrange,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(46),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 16),
+                    ZzzButton(
+                      text: 'Kick / Reset Sesi MikroTik',
+                      icon: Icons.power_settings_new_rounded,
+                      style: ZzzButtonStyle.secondary,
+                      onPressed: () async {
+                        final u = _kickUsernameCtrl.text.trim();
+                        if (u.isEmpty) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(backgroundColor: AppTheme.bgCard, content: Text('Mengirim sinyal reset untuk $u...')),
+                        );
+                        final ok = await techProv.kickPppoe(u);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppTheme.bgCard,
+                              content: Text(
+                                ok ? 'Sesi PPPoE $u berhasil di-reset!' : 'Gagal reset sesi PPPoE.',
+                                style: TextStyle(color: ok ? AppTheme.neonGreen : AppTheme.crimsonRed),
+                              ),
+                            ),
+                          );
+                        }
+                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -280,10 +280,14 @@ class _QuickToolsScreenState extends State<QuickToolsScreen> with SingleTickerPr
       return content;
     }
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.85,
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.bgDark,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      height: MediaQuery.of(context).size.height * 0.85,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         child: content,
       ),
     );

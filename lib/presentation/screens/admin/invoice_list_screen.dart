@@ -6,7 +6,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../../core/utils/formatters.dart';
 import '../../providers/invoice_provider.dart';
-import '../../widgets/cyber_card.dart';
+import '../../widgets/zzz_card.dart';
+import '../../widgets/zzz_badge.dart';
+import '../../widgets/zzz_button.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
 
@@ -21,6 +23,7 @@ class InvoiceListScreen extends StatefulWidget {
 
 class _InvoiceListScreenState extends State<InvoiceListScreen> {
   late String _currentStatus;
+  final _searchCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -31,6 +34,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   void _showPayModal(int invoiceId, String invoiceNo, String customerName, num amount) {
     String method = 'cash';
     final notesCtrl = TextEditingController();
@@ -39,7 +48,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.bgCard,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (modalCtx, setModalState) => Padding(
@@ -48,99 +57,147 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Konfirmasi Bayar • $invoiceNo',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-              ),
-              const SizedBox(height: 4),
-              Text('Pelanggan: $customerName', style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-              const Divider(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Nominal Tagihan:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                  Text(
-                    Formatters.formatRupiah(amount),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue),
-                  ),
+                  const Text('CATAT PEMBAYARAN TAGIHAN', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppTheme.textWhite)),
+                  Text(invoiceNo, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.neonCyan)),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Metode Pembayaran:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgDark,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.borderDark),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(customerName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textWhite)),
+                        const Text('Pelanggan Sukorejo', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                      ],
+                    ),
+                    Text(
+                      Formatters.formatRupiah(amount),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppTheme.neonGreen),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Payment Method Toggle
               Row(
                 children: [
                   Expanded(
                     child: ChoiceChip(
-                      label: const Center(child: Text('Tunai (Cash)')),
+                      label: const Center(child: Text('Tunai (Cash)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
                       selected: method == 'cash',
                       onSelected: (_) => setModalState(() => method = 'cash'),
-                      selectedColor: AppTheme.primaryBlue,
-                      labelStyle: TextStyle(color: method == 'cash' ? Colors.white : AppTheme.textMain, fontWeight: FontWeight.bold),
+                      selectedColor: AppTheme.neonGreen,
+                      backgroundColor: AppTheme.bgDark,
+                      labelStyle: TextStyle(color: method == 'cash' ? AppTheme.bgDark : AppTheme.textMuted),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: ChoiceChip(
-                      label: const Center(child: Text('Transfer Bank')),
+                      label: const Center(child: Text('Transfer Bank', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
                       selected: method == 'transfer',
                       onSelected: (_) => setModalState(() => method = 'transfer'),
-                      selectedColor: AppTheme.primaryBlue,
-                      labelStyle: TextStyle(color: method == 'transfer' ? Colors.white : AppTheme.textMain, fontWeight: FontWeight.bold),
+                      selectedColor: AppTheme.neonCyan,
+                      backgroundColor: AppTheme.bgDark,
+                      labelStyle: TextStyle(color: method == 'transfer' ? AppTheme.bgDark : AppTheme.textMuted),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
+
               TextField(
                 controller: notesCtrl,
+                style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: 'Catatan tambahan (opsional)...',
-                  hintStyle: const TextStyle(fontSize: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  labelText: 'Catatan Pembayaran (Opsional)',
+                  labelStyle: const TextStyle(color: AppTheme.textMuted),
+                  filled: true,
+                  fillColor: AppTheme.bgDark,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.neonCyan)),
                 ),
               ),
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final picker = ImagePicker();
-                  final picked = await picker.pickImage(source: ImageSource.camera, imageQuality: 75);
-                  if (picked != null) {
-                    setModalState(() => proofFile = File(picked.path));
-                  }
-                },
-                icon: const Icon(Icons.camera_alt_rounded, size: 16),
-                label: Text(proofFile != null ? 'Foto Struk Dipilih ✓' : 'Ambil Foto Struk (Opsional)', style: const TextStyle(fontSize: 12)),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(40),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
+              // Bukti Transfer
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgDark,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.borderDark),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      proofFile != null ? Icons.check_circle_rounded : Icons.receipt_rounded,
+                      color: proofFile != null ? AppTheme.neonGreen : AppTheme.neonCyan,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        proofFile != null ? 'Bukti Terlampir ✓' : 'Upload Bukti Transfer (Opsional)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: proofFile != null ? AppTheme.neonGreen : AppTheme.textSilver,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.photo_library_rounded, color: AppTheme.neonCyan, size: 20),
+                      onPressed: () async {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                        if (picked != null) {
+                          setModalState(() => proofFile = File(picked.path));
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 18),
-              ElevatedButton(
+              const SizedBox(height: 20),
+
+              ZzzButton(
+                text: 'Konfirmasi Pembayaran Lunas',
+                icon: Icons.check_circle_rounded,
+                style: ZzzButtonStyle.primary,
                 onPressed: () async {
                   Navigator.pop(ctx);
                   final ok = await context.read<InvoiceProvider>().payInvoice(
-                    invoiceId: invoiceId,
-                    amount: amount,
+                    invoiceId,
                     paymentMethod: method,
                     notes: notesCtrl.text.trim(),
-                    proofImage: proofFile,
+                    proofFile: proofFile,
                   );
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(ok ? 'Pembayaran berhasil diverifikasi!' : 'Gagal verifikasi pembayaran.')),
+                      SnackBar(
+                        backgroundColor: AppTheme.bgCard,
+                        content: Text(
+                          ok ? 'Tagihan berhasil dibayar & kuitansi terbit!' : 'Gagal memproses pembayaran.',
+                          style: TextStyle(color: ok ? AppTheme.neonGreen : AppTheme.crimsonRed),
+                        ),
+                      ),
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentGreen,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Tandai Telah Dibayar & Masuk Kas', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -154,53 +211,43 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     final invProv = context.watch<InvoiceProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: const Text('Tagihan & Billing', style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: AppTheme.textMain),
-        backgroundColor: Colors.white,
+        title: const Text('TAGIHAN & BILLING', style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        backgroundColor: AppTheme.bgDark,
         elevation: 0,
       ),
       body: Column(
         children: [
-          // Filter Tabs
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-            child: Row(
+          // Filter & Search
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
               children: [
-                Expanded(
-                  child: ChoiceChip(
-                    label: const Center(child: Text('Belum Bayar')),
-                    selected: _currentStatus == 'unpaid',
-                    onSelected: (_) {
-                      SoundEffects.playTap();
-                      setState(() => _currentStatus = 'unpaid');
-                      invProv.fetchInvoices(status: 'unpaid');
-                    },
-                    selectedColor: AppTheme.accentOrange,
-                    labelStyle: TextStyle(
-                      color: _currentStatus == 'unpaid' ? Colors.white : AppTheme.textMain,
-                      fontWeight: FontWeight.bold,
-                    ),
+                TextField(
+                  controller: _searchCtrl,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                  onChanged: (v) => invProv.fetchInvoices(status: _currentStatus, search: v),
+                  decoration: InputDecoration(
+                    hintText: 'Cari nama pelanggan atau nomor invoice...',
+                    hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.neonCyan, size: 20),
+                    filled: true,
+                    fillColor: AppTheme.bgCard,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderDark)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5)),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
-                    label: const Center(child: Text('Lunas (Paid)')),
-                    selected: _currentStatus == 'paid',
-                    onSelected: (_) {
-                      SoundEffects.playTap();
-                      setState(() => _currentStatus = 'paid');
-                      invProv.fetchInvoices(status: 'paid');
-                    },
-                    selectedColor: AppTheme.accentGreen,
-                    labelStyle: TextStyle(
-                      color: _currentStatus == 'paid' ? Colors.white : AppTheme.textMain,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildFilterChip('Belum Bayar', 'unpaid'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Lunas', 'paid'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Semua Tagihan', 'all'),
+                  ],
                 ),
               ],
             ),
@@ -208,26 +255,29 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
           // Invoices List
           Expanded(
-            child: invProv.isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+            child: invProv.isLoading && invProv.invoices.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.neonCyan))
                 : invProv.invoices.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.receipt_long_rounded,
                         title: 'Tidak Ada Tagihan',
-                        message: 'Semua tagihan untuk status ini telah terselesaikan.',
-                        onRetry: () => invProv.fetchInvoices(status: _currentStatus),
+                        message: 'Tidak ada data tagihan yang sesuai dengan filter.',
                       )
                     : RefreshIndicator(
-                        onRefresh: () => invProv.fetchInvoices(status: _currentStatus),
-                        color: AppTheme.primaryBlue,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        onRefresh: () => invProv.fetchInvoices(status: _currentStatus, search: _searchCtrl.text),
+                        color: AppTheme.neonCyan,
+                        backgroundColor: AppTheme.bgCard,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                           itemCount: invProv.invoices.length,
-                          itemBuilder: (ctx, idx) {
-                            final inv = invProv.invoices[idx];
-                            return CyberCard(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final inv = invProv.invoices[index];
+                            final isUnpaid = inv.isUnpaid;
+
+                            return ZzzCard(
                               padding: const EdgeInsets.all(14),
+                              borderColor: isUnpaid ? AppTheme.hazardYellow.withOpacity(0.4) : AppTheme.borderDark,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -235,45 +285,52 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        inv.customerName,
-                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                                        inv.invoiceNumber,
+                                        style: const TextStyle(color: AppTheme.neonCyan, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8),
                                       ),
                                       StatusBadge(status: inv.status),
                                     ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${inv.invoiceNo} • Periode ${inv.period}',
-                                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('Total Tagihan', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                                          Text(
-                                            Formatters.formatRupiah(inv.total),
-                                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.textMain),
-                                          ),
-                                        ],
-                                      ),
-                                      if (!inv.isPaid)
-                                        ElevatedButton(
-                                          onPressed: () => _showPayModal(inv.id, inv.invoiceNo, inv.customerName, inv.total),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppTheme.primaryBlue,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                            elevation: 0,
-                                          ),
-                                          child: const Text('Bayar Tagihan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              inv.customerName,
+                                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textWhite),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Jatuh Tempo: ${Formatters.formatDate(inv.dueDate)}',
+                                              style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      Text(
+                                        Formatters.formatRupiah(inv.amount),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w900,
+                                          color: isUnpaid ? AppTheme.hazardYellow : AppTheme.neonGreen,
+                                        ),
+                                      ),
                                     ],
                                   ),
+                                  if (isUnpaid) ...[
+                                    const SizedBox(height: 12),
+                                    ZzzButton(
+                                      text: 'Terima Bayar',
+                                      icon: Icons.payments_rounded,
+                                      style: ZzzButtonStyle.secondary,
+                                      height: 38,
+                                      onPressed: () => _showPayModal(inv.id, inv.invoiceNumber, inv.customerName, inv.amount),
+                                    ),
+                                  ],
                                 ],
                               ),
                             );
@@ -282,6 +339,37 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String status) {
+    final isSelected = _currentStatus == status;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          SoundEffects.playTap();
+          setState(() => _currentStatus = status);
+          context.read<InvoiceProvider>().fetchInvoices(status: status, search: _searchCtrl.text);
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.neonCyan.withOpacity(0.15) : AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? AppTheme.neonCyan : AppTheme.borderDark),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              color: isSelected ? AppTheme.neonCyan : AppTheme.textMuted,
+            ),
+          ),
+        ),
       ),
     );
   }

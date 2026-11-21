@@ -4,10 +4,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
-import '../../widgets/blue_archive_stage.dart';
-import '../../widgets/cyber_card.dart';
-import '../../widgets/dana_curved_header.dart';
-import '../../widgets/squircle_action_button.dart';
+import '../../widgets/zzz_card.dart';
+import '../../widgets/zzz_badge.dart';
 import 'customer_list_screen.dart';
 import 'expense_ledger_screen.dart';
 import 'invoice_list_screen.dart';
@@ -39,409 +37,466 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
 
     return RefreshIndicator(
       onRefresh: () => dashProv.fetchDashboard(),
-      color: AppTheme.primaryBlue,
+      color: AppTheme.neonCyan,
+      backgroundColor: AppTheme.bgCard,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 52, 16, 80),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Signature DANA Curved Header with Live Throughput & Saldo
-            DanaCurvedHeader(
-              userName: auth.user?.name ?? 'Admin',
-              role: auth.user?.role ?? 'Admin',
-              areaName: auth.user?.areaName ?? 'Sukorejo',
-              saldoKas: dash?.saldoKas ?? 19270293,
-              sisaModal: dash?.sisaModal ?? 14553555,
-              sisaKasOps: dash?.sisaKasOps ?? 4716738,
-              wanRx: dash?.wanRx ?? '0 bps',
-              wanTx: dash?.wanTx ?? '0 bps',
-              activePppoe: dash?.activePppoe ?? 109,
-              onSaldoTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen()),
-                );
-              },
-            ),
-
-            // 2. Iconic Blue Archive SCHALE Tactical Terminal & MomoTalk Console
-            BlueArchiveStage(
-              hasAlert: dashProv.hasAlert,
-              losCount: dashProv.losCount,
-              userName: auth.user?.name ?? 'Sensei',
-              onAlertTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1)),
-                );
-              },
-            ),
-
-            // 3. Quick Mission Actions Grid (Blue Archive Tactical Operation Tiles)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
-              child: Row(
-                children: const [
-                  Icon(Icons.dashboard_customize_rounded, color: AppTheme.primaryBlue, size: 15),
-                  SizedBox(width: 8),
-                  Text(
-                    'TACTICAL MISSION BOARD // SECTOR OPERATIONS',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textMain,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: CyberCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+            // Top Bar: System ID & User
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        SquircleActionButton(
-                          code: '01',
-                          icon: Icons.people_alt_rounded,
-                          label: 'Pelanggan',
-                          iconColor: AppTheme.primaryBlue,
-                          backgroundColor: const Color(0xFFE0F2FE),
-                          badgeText: dash != null ? '${dash.totalCustomers}' : '114',
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const CustomerListScreen()),
-                            );
-                          },
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.neonCyan,
+                            boxShadow: [
+                              BoxShadow(color: AppTheme.neonCyan, blurRadius: 6),
+                            ],
+                          ),
                         ),
-                        SquircleActionButton(
-                          code: '02',
-                          icon: Icons.receipt_long_rounded,
-                          label: 'Tagihan',
-                          iconColor: AppTheme.accentOrange,
-                          backgroundColor: AppTheme.pastelOrange,
-                          badgeText: (dash?.unpaidCount ?? 0) > 0 ? '${dash!.unpaidCount}' : '28',
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
-                            );
-                          },
-                        ),
-                        SquircleActionButton(
-                          code: '03',
-                          icon: Icons.add_card_rounded,
-                          label: 'Catat Kas',
-                          iconColor: AppTheme.accentGreen,
-                          backgroundColor: AppTheme.pastelGreen,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen(openAddModal: true)),
-                            );
-                          },
-                        ),
-                        SquircleActionButton(
-                          code: '04',
-                          icon: Icons.alt_route_rounded,
-                          label: 'ODP Map',
-                          iconColor: AppTheme.accentPurple,
-                          backgroundColor: AppTheme.pastelPurple,
-                          badgeText: '15',
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const OdpMapScreen()),
-                            );
-                          },
+                        const SizedBox(width: 8),
+                        Text(
+                          'INTERNET DESA // SECTOR ${auth.user?.areaName?.toUpperCase() ?? "SUKOREJO"}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            color: AppTheme.neonCyan,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SquircleActionButton(
-                          code: '05',
-                          icon: Icons.speed_rounded,
-                          label: 'Diagnosa',
-                          iconColor: AppTheme.techCyan,
-                          backgroundColor: const Color(0xFFE0F7FA),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const QuickToolsScreen()),
-                            );
-                          },
-                        ),
-                        SquircleActionButton(
-                          code: '06',
-                          icon: Icons.warning_amber_rounded,
-                          label: 'Cek LOS',
-                          iconColor: AppTheme.accentRed,
-                          backgroundColor: AppTheme.pastelRed,
-                          badgeText: (dash?.losOnus ?? 0) > 0 ? '${dash!.losOnus}' : null,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1)),
-                            );
-                          },
-                        ),
-                        SquircleActionButton(
-                          code: '07',
-                          icon: Icons.person_add_alt_1_rounded,
-                          label: 'Pasang Baru',
-                          iconColor: const Color(0xFF0288D1),
-                          backgroundColor: const Color(0xFFE1F5FE),
-                          badgeText: (dash?.pendingRegistrations ?? 0) > 0 ? '${dash!.pendingRegistrations}' : '2',
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const RegisterProspectScreen()),
-                            );
-                          },
-                        ),
-                        SquircleActionButton(
-                          code: '08',
-                          icon: Icons.account_balance_wallet_rounded,
-                          label: 'Buku Kas',
-                          iconColor: const Color(0xFF5E35B1),
-                          backgroundColor: const Color(0xFFEDE7F6),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen()),
-                            );
-                          },
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      auth.user?.name ?? 'COMMANDER',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.textWhite,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
-              ),
+                ZzzBadge(
+                  text: auth.user?.role ?? 'ADMIN',
+                  type: ZzzBadgeType.cyan,
+                  icon: Icons.shield_rounded,
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
 
-            // 4. Blue Archive Cyber-NOC Hardware HUD (MikroTik Core + OLT FD1602S)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
-              child: Row(
-                children: const [
-                  Icon(Icons.terminal_rounded, color: AppTheme.primaryBlue, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'TELEMETRI HARDWARE // SCHALE CORE',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textMain,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
+            // Hero Telemetry Card (ZZZ Style)
+            ZzzCard(
+              tag: 'LIVE NOC TELEMETRY',
+              borderColor: AppTheme.neonCyan,
+              hasGlow: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // MikroTik Router Card
-                  Expanded(
-                    child: CyberCard(
-                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: dash?.isMikrotikOnline == true ? AppTheme.accentGreen : AppTheme.accentRed,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'MikroTik Core',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                          const Text(
+                            'LIVE WAN THROUGHPUT',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textMuted,
+                              letterSpacing: 1.0,
+                            ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Text(
-                            dash?.wanRx ?? '0 bps',
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue),
-                          ),
-                          const Text('Live WAN Download', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                          const Divider(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('PPPoE Aktif:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text('${dash?.activePppoe ?? 109}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('CPU Load:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text('${dash?.cpuLoad ?? 0}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
+                            dash?.wanRx ?? '145.2 Mbps',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.neonCyan,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                  // OLT FD1602S Card
-                  Expanded(
-                    child: CyberCard(
-                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: dash?.isOltOnline == true ? AppTheme.accentGreen : AppTheme.accentRed,
-                                  shape: BoxShape.circle,
-                                ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgDark,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppTheme.borderDark),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.arrow_upward_rounded, size: 14, color: AppTheme.hazardYellow),
+                            const SizedBox(width: 4),
+                            Text(
+                              dash?.wanTx ?? '27.1 Mbps',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textSilver,
                               ),
-                              const SizedBox(width: 6),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(color: AppTheme.borderDark, height: 1),
+                  const SizedBox(height: 14),
+
+                  // Mini stats row: Saldo Kas & Online PPPoE
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen()),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               const Text(
-                                'OLT C-Data',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text(
-                                '${dash?.onlineOnus ?? 109}',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.accentGreen),
-                              ),
-                              Text(' / ${dash?.totalOnus ?? 114} ONU', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                            ],
-                          ),
-                          const Text('ONU Terdaftar', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                          const Divider(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('ONU LOS:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text(
-                                '${dash?.losOnus ?? 0}',
+                                'SALDO KAS OPERASIONAL',
                                 style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: (dash?.losOnus ?? 0) > 0 ? AppTheme.accentRed : AppTheme.textMain,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                Formatters.formatCurrency(dash?.saldoKas ?? 19270293),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.hazardYellow,
                                 ),
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Daya Optik:', style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
-                              Text(dash?.avgRxPower ?? '-18.3 dBm', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Container(width: 1, height: 30, color: AppTheme.borderDark),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'PPPoE ONLINE',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(Icons.wifi_tethering_rounded, size: 14, color: AppTheme.neonGreen),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${dash?.activePppoe ?? 109} / ${dash?.totalCustomers ?? 114}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.neonGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
 
-            // 5. Financial Overview Card (Kas Riil Sukorejo)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-              child: Row(
-                children: const [
-                  Icon(Icons.pie_chart_rounded, color: AppTheme.primaryBlue, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'STATUS KEUANGAN KAS RIIL',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textMain,
-                      letterSpacing: 1.0,
-                    ),
+            // Emergency LOS Alert Banner (If Any)
+            if (dashProv.hasAlert || (dashProv.losCount > 0)) ...[
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1)),
+                  );
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.crimsonRed.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.crimsonRed, width: 1.2),
+                    boxShadow: [
+                      BoxShadow(color: AppTheme.crimsonRed.withOpacity(0.2), blurRadius: 12),
+                    ],
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: AppTheme.crimsonRed, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'CRITICAL // DETEKSI KABEL OPTIK PUTUS',
+                              style: TextStyle(
+                                color: AppTheme.crimsonRed,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            Text(
+                              'Ada ${dashProv.losCount} pelanggan mengalami LOS fisik. Klik untuk periksa.',
+                              style: const TextStyle(
+                                color: AppTheme.textSilver,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded, color: AppTheme.crimsonRed),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+            ],
 
-            CyberCard(
-              padding: const EdgeInsets.all(18),
+            // Section Header: Tactical Actions
+            Row(
+              children: const [
+                Icon(Icons.dashboard_customize_rounded, size: 14, color: AppTheme.neonCyan),
+                SizedBox(width: 8),
+                Text(
+                  'SECTOR OPERATIONS // QUICK ACTIONS',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.textSilver,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Tactical Grid (8 Tiles)
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              children: [
+                _buildActionTile(
+                  context,
+                  icon: Icons.people_alt_rounded,
+                  label: 'Pelanggan',
+                  color: AppTheme.neonCyan,
+                  badge: '${dash?.totalCustomers ?? 114}',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen())),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Tagihan',
+                  color: AppTheme.hazardYellow,
+                  badge: '${dash?.unpaidCount ?? 28}',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvoiceListScreen())),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.account_balance_wallet_rounded,
+                  label: 'Buku Kas',
+                  color: AppTheme.neonGreen,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen())),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.alt_route_rounded,
+                  label: 'ODP Map',
+                  color: AppTheme.electricPurple,
+                  badge: '15',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OdpMapScreen())),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.speed_rounded,
+                  label: 'Diagnosa',
+                  color: AppTheme.neonCyan,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickToolsScreen())),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.warning_amber_rounded,
+                  label: 'Cek LOS',
+                  color: AppTheme.crimsonRed,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickToolsScreen(initialTab: 1))),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.add_card_rounded,
+                  label: 'Catat Kas',
+                  color: AppTheme.accentOrange,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseLedgerScreen(openAddModal: true))),
+                ),
+                _buildActionTile(
+                  context,
+                  icon: Icons.person_add_alt_1_rounded,
+                  label: 'Pasang Baru',
+                  color: AppTheme.neonCyan,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterProspectScreen())),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Sector Financial Overview
+            ZzzCard(
+              tag: 'FINANCIAL SECTOR OVERVIEW',
+              borderColor: AppTheme.borderDark,
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Sisa Modal Awal', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                          const SizedBox(height: 2),
-                          Text(
-                            Formatters.formatRupiah(dash?.sisaModal ?? 14553555),
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.textMain),
-                          ),
-                        ],
+                      const Text(
+                        'Total Pendapatan Terverifikasi',
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('Sisa Kas Operasional', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                          const SizedBox(height: 2),
-                          Text(
-                            Formatters.formatRupiah(dash?.sisaKasOps ?? 4716738),
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.accentGreen),
-                          ),
-                        ],
+                      Text(
+                        Formatters.formatCurrency(dash?.totalPaidThisMonth ?? 18450000),
+                        style: const TextStyle(
+                          color: AppTheme.textWhite,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
-                  const Divider(height: 22),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Pendapatan Bulan Ini', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                          const SizedBox(height: 2),
-                          Text(
-                            Formatters.formatRupiah(dash?.totalRevenue ?? 6490006),
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
-                          ),
-                        ],
+                      const Text(
+                        'Piutang Tagihan Tertunda',
+                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('Beban Pengeluaran Bulan Ini', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                          const SizedBox(height: 2),
-                          Text(
-                            Formatters.formatRupiah(dash?.totalExpense ?? 14513262),
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.accentRed),
-                          ),
-                        ],
+                      Text(
+                        Formatters.formatCurrency(dash?.totalUnpaidThisMonth ?? 4600000),
+                        style: const TextStyle(
+                          color: AppTheme.crimsonRed,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionTile(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    String? badge,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.borderDark, width: 1.2),
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textWhite,
+                  ),
+                ),
+              ],
+            ),
+            if (badge != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    badge,
+                    style: const TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.bgDark,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

@@ -4,7 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/sound_effects.dart';
 import '../../../core/utils/formatters.dart';
 import '../../providers/customer_provider.dart';
-import '../../widgets/cyber_card.dart';
+import '../../widgets/zzz_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/status_badge.dart';
 import 'customer_detail_screen.dart';
@@ -52,55 +52,49 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     final custProv = context.watch<CustomerProvider>();
 
     return Scaffold(
-      backgroundColor: AppTheme.iceBackground,
+      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
-        title: const Text('Daftar Pelanggan', style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: AppTheme.textMain),
-        backgroundColor: Colors.white,
+        title: const Text('DIREKTORI PELANGGAN', style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        backgroundColor: AppTheme.bgDark,
         elevation: 0,
       ),
       body: Column(
         children: [
-          // Search & Filter Box
-          Container(
-            color: Colors.white,
+          // Search & Filter Header
+          Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               children: [
                 TextField(
                   controller: _searchController,
                   onChanged: _onSearch,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Cari nama, ID, nomor WA, atau ODP...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textLight),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryBlue, size: 20),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onSearch('');
-                            },
-                          )
-                        : null,
+                    hintText: 'Cari nama, secret PPPoE, atau no HP...',
+                    hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.neonCyan, size: 20),
                     filled: true,
-                    fillColor: const Color(0xFFF1F5F9),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    fillColor: AppTheme.bgCard,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.borderDark),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.neonCyan, width: 1.5),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // Filter Tabs (Semua, Aktif, Isolir, Belum Bayar, Pasang Baru)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip('all', 'Semua'),
-                      _buildFilterChip('active', 'Aktif'),
-                      _buildFilterChip('isolated', 'Terisolir'),
-                      _buildFilterChip('unpaid', 'Belum Bayar (${custProv.unpaidCount})'),
-                      _buildFilterChip('pasang_baru', 'Antrean Pasang (${custProv.pendingCount})'),
+                      _buildFilterChip('Semua', 'all'),
+                      _buildFilterChip('Online / Aktif', 'active'),
+                      _buildFilterChip('Terisolir', 'isolated'),
+                      _buildFilterChip('Pending', 'inactive'),
                     ],
                   ),
                 ),
@@ -108,111 +102,89 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
             ),
           ),
 
-          // Customer List
+          // List of Customers
           Expanded(
-            child: custProv.isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+            child: custProv.isLoading && custProv.customers.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.neonCyan))
                 : custProv.customers.isEmpty
-                    ? EmptyState(
-                        icon: Icons.people_outline_rounded,
+                    ? const EmptyState(
+                        icon: Icons.person_off_rounded,
                         title: 'Tidak Ada Pelanggan',
-                        message: 'Tidak ditemukan pelanggan sesuai kriteria pencarian.',
-                        onRetry: () => custProv.fetchCustomers(),
+                        message: 'Tidak ditemukan data yang sesuai dengan pencarian.',
                       )
                     : RefreshIndicator(
-                        onRefresh: () => custProv.fetchCustomers(status: _selectedStatus),
-                        color: AppTheme.primaryBlue,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        onRefresh: () => custProv.fetchCustomers(status: _selectedStatus, search: _searchController.text),
+                        color: AppTheme.neonCyan,
+                        backgroundColor: AppTheme.bgCard,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                           itemCount: custProv.customers.length,
-                          itemBuilder: (ctx, idx) {
-                            final c = custProv.customers[idx];
-                            return CyberCard(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                              padding: const EdgeInsets.all(14),
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final c = custProv.customers[index];
+                            return ZzzCard(
+                              padding: const EdgeInsets.all(12),
                               onTap: () {
                                 SoundEffects.playTap();
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => CustomerDetailScreen(customerId: c.id),
-                                  ),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => CustomerDetailScreen(customerId: c.id)),
                                 );
                               },
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Avatar Initials
                                   Container(
                                     width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: c.isOnline ? AppTheme.pastelGreen : (c.isIsolated ? AppTheme.pastelRed : const Color(0xFFE2E8F0)),
-                                      borderRadius: BorderRadius.circular(14),
+                                      color: c.isOnline
+                                          ? AppTheme.neonGreen.withOpacity(0.12)
+                                          : (c.isIsolated ? AppTheme.crimsonRed.withOpacity(0.12) : AppTheme.bgDark),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: c.isOnline
+                                            ? AppTheme.neonGreen
+                                            : (c.isIsolated ? AppTheme.crimsonRed : AppTheme.borderDark),
+                                        width: 1.2,
+                                      ),
                                     ),
                                     child: Center(
                                       child: Text(
-                                        c.name.isNotEmpty ? c.name[0].toUpperCase() : 'P',
+                                        (c.mikrotikUsername?.isNotEmpty == true && c.mikrotikUsername!.length >= 4)
+                                            ? c.mikrotikUsername!.substring(0, 4)
+                                            : c.name.substring(0, 1).toUpperCase(),
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                          color: c.isOnline ? AppTheme.accentGreen : (c.isIsolated ? AppTheme.accentRed : AppTheme.textMain),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w900,
+                                          color: c.isOnline ? AppTheme.neonGreen : AppTheme.textSilver,
                                         ),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-
-                                  // Details
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                c.name,
-                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            StatusBadge(status: c.status),
-                                          ],
+                                        Text(
+                                          c.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: AppTheme.textWhite,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                          ),
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
-                                          '${c.custId} • ${c.packageName ?? "Paket"} (${Formatters.formatCompactRupiah(c.packagePrice ?? 0)})',
-                                          style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.alt_route_rounded, size: 12, color: AppTheme.textLight),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              c.odpName ?? 'ODP Belum Diatur',
-                                              style: const TextStyle(fontSize: 11, color: AppTheme.primaryBlue, fontWeight: FontWeight.w600),
-                                            ),
-                                            if (c.hasUnpaid) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.pastelOrange,
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: Text(
-                                                  'Tunggakan ${Formatters.formatCompactRupiah(c.unpaidAmount)}',
-                                                  style: const TextStyle(fontSize: 9.5, color: AppTheme.accentOrange, fontWeight: FontWeight.bold),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
+                                          '${c.odpName ?? "Tanpa ODP"} • ${c.packageName ?? "Paket Standard"}',
+                                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                                         ),
                                       ],
                                     ),
                                   ),
+                                  StatusBadge(status: c.status),
                                 ],
                               ),
                             );
@@ -225,23 +197,32 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String status, String label) {
+  Widget _buildFilterChip(String label, String status) {
     final isSelected = _selectedStatus == status;
     return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => _changeStatus(status),
-        selectedColor: AppTheme.primaryBlue,
-        backgroundColor: const Color(0xFFF1F5F9),
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : AppTheme.textMain,
-          fontSize: 11,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+      padding: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        onTap: () => _changeStatus(status),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.neonCyan.withOpacity(0.15) : AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? AppTheme.neonCyan : AppTheme.borderDark,
+              width: 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              color: isSelected ? AppTheme.neonCyan : AppTheme.textMuted,
+            ),
+          ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        showCheckmark: false,
       ),
     );
   }

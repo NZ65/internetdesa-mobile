@@ -1,92 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Zenless Zone Zero (ZZZ) Urban Street Anime Design System
 class AppTheme {
-  // Brand Colors - Blue Archive & DANA Inspired
-  static const Color primaryBlue = Color(0xFF118EEA);      // Cerulean Blue (DANA Core)
-  static const Color primaryDark = Color(0xFF0C75C2);      // Deep Cyber Blue
-  static const Color primaryNavy = Color(0xFF0A192F);      // Dark NOC Navy
-  static const Color techCyan = Color(0xFF00E5FF);         // Cyber Tech Cyan (Blue Archive Halo)
-  static const Color iceBackground = Color(0xFFF5F8FB);    // DANA Ice Blue Background
-  
-  // Neutral & Accent Tones
-  static const Color textMain = Color(0xFF1E293B);         // Slate 800
-  static const Color textMuted = Color(0xFF64748B);        // Slate 500
-  static const Color textLight = Color(0xFF94A3B8);        // Slate 400
-  
-  // Status Colors
-  static const Color accentGreen = Color(0xFF00C853);       // Emerald Green (Online / Lunas)
-  static const Color pastelGreen = Color(0xFFE8F5E9);
-  static const Color accentRed = Color(0xFFFF3B30);         // Crimson Alert (LOS / Offline / Terisolir)
-  static const Color pastelRed = Color(0xFFFFEBEE);
-  static const Color accentOrange = Color(0xFFFF9500);      // Amber Pending / Unpaid
-  static const Color pastelOrange = Color(0xFFFFF3E0);
-  static const Color accentPurple = Color(0xFF7C4DFF);      // Tech Purple
-  static const Color pastelPurple = Color(0xFFEDE7F6);
+  // ZZZ Core Palette
+  static const Color bgDark = Color(0xFF0E0F14);          // Deep Matte Carbon Black
+  static const Color bgSurface = Color(0xFF161820);       // Dark Slate Surface
+  static const Color bgCard = Color(0xFF1E212B);          // Tactical Carbon Card
+  static const Color bgCardLight = Color(0xFF282C3A);     // Elevated Highlight Card
 
-  // Surface & Cards
-  static const Color cardLight = Colors.white;
-  static const Color cardDark = Color(0xFF16203B);
-  static const Color borderLight = Color(0xFFE2E8F0);
+  // Neon & Hazard Accents
+  static const Color neonCyan = Color(0xFF00F0FF);        // Electric Neon Cyan
+  static const Color hazardYellow = Color(0xFFFFCC00);    // Cyber Hazard Yellow
+  static const Color accentOrange = Color(0xFFFF6600);    // Vibrant Action Orange
+  static const Color neonGreen = Color(0xFF00E676);       // Online / Normal Emerald
+  static const Color crimsonRed = Color(0xFFFF3366);      // LOS / Critical / Alert
+  static const Color electricPurple = Color(0xFFB026FF);  // Tech Purple
 
-  // Soft Shadows
-  static const List<BoxShadow> softShadow = [
+  // Text Colors
+  static const Color textWhite = Color(0xFFF8FAFC);       // Crisp Pure White
+  static const Color textSilver = Color(0xFFCBD5E1);      // High-contrast Silver
+  static const Color textMuted = Color(0xFF8692A6);       // Subdued Slate
+  static const Color textDark = Color(0xFF4B5563);        // Dimmed Detail
+
+  // Borders & Glows
+  static const Color borderDark = Color(0xFF2A2D3C);
+  static const Color borderCyan = Color(0x4D00F0FF);
+  static const Color borderYellow = Color(0x4DFFCC00);
+
+  // Backward-compatibility aliases for legacy screen references
+  static const Color primaryBlue = neonCyan;
+  static const Color primaryDark = Color(0xFF0C75C2);
+  static const Color primaryNavy = bgDark;
+  static const Color techCyan = neonCyan;
+  static const Color iceBackground = bgDark;
+  static const Color textMain = textWhite;
+  static const Color textLight = textSilver;
+  static const Color cardLight = bgCard;
+  static const Color cardDark = bgCard;
+  static const Color borderLight = borderDark;
+  static const Color accentGreen = neonGreen;
+  static const Color accentRed = crimsonRed;
+  static const Color accentPurple = electricPurple;
+  static const Color pastelGreen = Color(0x2200E676);
+  static const Color pastelRed = Color(0x22FF3366);
+  static const Color pastelOrange = Color(0x22FF6600);
+  static const Color pastelPurple = Color(0x22B026FF);
+
+  // ZZZ Cyber Shadows & Glows
+  static const List<BoxShadow> cyanGlow = [
     BoxShadow(
-      color: Color(0x080A192F),
-      blurRadius: 16,
+      color: Color(0x4400F0FF),
+      blurRadius: 18,
+      spreadRadius: 1,
       offset: Offset(0, 4),
     ),
   ];
 
-  static const List<BoxShadow> cyberGlow = [
+  static const List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Color(0x33118EEA),
-      blurRadius: 20,
+      color: Color(0x66000000),
+      blurRadius: 16,
       offset: Offset(0, 6),
     ),
   ];
 
-  static ThemeData get lightTheme {
+  static const List<BoxShadow> softShadow = cardShadow;
+
+  static ThemeData get darkTheme {
     final baseFont = GoogleFonts.plusJakartaSansTextTheme();
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      primaryColor: primaryBlue,
-      scaffoldBackgroundColor: iceBackground,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryBlue,
-        primary: primaryBlue,
-        secondary: techCyan,
-        surface: cardLight,
-        background: iceBackground,
+      brightness: Brightness.dark,
+      primaryColor: neonCyan,
+      scaffoldBackgroundColor: bgDark,
+      colorScheme: const ColorScheme.dark(
+        primary: neonCyan,
+        secondary: hazardYellow,
+        surface: bgSurface,
+        background: bgDark,
+        error: crimsonRed,
       ),
       textTheme: baseFont.copyWith(
-        displayLarge: GoogleFonts.plusJakartaSans(color: textMain, fontWeight: FontWeight.bold),
-        titleLarge: GoogleFonts.plusJakartaSans(color: textMain, fontWeight: FontWeight.w700, fontSize: 18),
-        titleMedium: GoogleFonts.plusJakartaSans(color: textMain, fontWeight: FontWeight.w600, fontSize: 16),
-        bodyLarge: GoogleFonts.plusJakartaSans(color: textMain, fontSize: 14),
+        displayLarge: GoogleFonts.plusJakartaSans(color: textWhite, fontWeight: FontWeight.w900),
+        titleLarge: GoogleFonts.plusJakartaSans(color: textWhite, fontWeight: FontWeight.w800, fontSize: 18),
+        titleMedium: GoogleFonts.plusJakartaSans(color: textWhite, fontWeight: FontWeight.w700, fontSize: 16),
+        bodyLarge: GoogleFonts.plusJakartaSans(color: textWhite, fontSize: 14),
         bodyMedium: GoogleFonts.plusJakartaSans(color: textMuted, fontSize: 13),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: bgDark,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: neonCyan),
         titleTextStyle: GoogleFonts.plusJakartaSans(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+          color: textWhite,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
         ),
       ),
       cardTheme: CardTheme(
-        color: cardLight,
+        color: bgCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0x0D000000)),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: borderDark, width: 1.2),
         ),
       ),
     );
   }
+
+  // Fallback getter so existing references to lightTheme work identically with ZZZ dark aesthetic
+  static ThemeData get lightTheme => darkTheme;
 }

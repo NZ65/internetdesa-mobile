@@ -5,16 +5,16 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
-  final VoidCallback? onRetry;
-  final String? retryLabel;
+  final String? buttonText;
+  final VoidCallback? onButtonPressed;
 
   const EmptyState({
     super.key,
-    required this.icon,
+    this.icon = Icons.inbox_rounded,
     required this.title,
-    required this.message,
-    this.onRetry,
-    this.retryLabel,
+    this.message = '',
+    this.buttonText,
+    this.onButtonPressed,
   });
 
   @override
@@ -28,43 +28,43 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withOpacity(0.08),
+                color: AppTheme.bgCard,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.borderDark, width: 1.5),
               ),
-              child: Icon(icon, color: AppTheme.primaryBlue, size: 40),
+              child: Icon(icon, size: 40, color: AppTheme.textMuted),
             ),
             const SizedBox(height: 16),
             Text(
               title,
+              textAlign: TextAlign.center,
               style: const TextStyle(
+                color: AppTheme.textWhite,
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textMain,
+                fontWeight: FontWeight.w800,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 6),
-            Text(
-              message,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppTheme.textMuted,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 18),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: Text(retryLabel ?? 'Muat Ulang'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            if (message.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 12,
                 ),
+              ),
+            ],
+            if (buttonText != null && onButtonPressed != null) ...[
+              const SizedBox(height: 20),
+              OutlinedButton(
+                onPressed: onButtonPressed,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppTheme.neonCyan),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  foregroundColor: AppTheme.neonCyan,
+                ),
+                child: Text(buttonText!),
               ),
             ],
           ],
