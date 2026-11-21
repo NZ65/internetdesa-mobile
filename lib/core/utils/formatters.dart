@@ -6,6 +6,9 @@ class Formatters {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
   }
 
+  static String formatCurrency(dynamic amount) => formatRupiah(amount);
+  static String formatDateTime(String? dateStr) => formatDate(dateStr);
+
   static String formatCompactRupiah(dynamic amount) {
     final num val = (amount is num) ? amount : (num.tryParse(amount?.toString() ?? '0') ?? 0);
     if (val >= 1000000000) {

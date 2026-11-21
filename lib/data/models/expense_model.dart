@@ -35,6 +35,7 @@ class ExpenseModel {
 
   bool get isExpense => type == 'out';
   String get createdAt => transactionDate;
+  String get title => itemName;
 
   factory ExpenseModel.fromJson(Map<String, dynamic> json) {
     return ExpenseModel(

@@ -24,8 +24,10 @@ class DashboardModel {
   num get sisaModal => stats['sisa_modal'] ?? 0;
   num get sisaKasOps => stats['sisa_kas_ops'] ?? 0;
   num get totalRevenue => stats['month_revenue'] ?? 0;
+  num get totalPaidThisMonth => totalRevenue;
   num get totalExpense => stats['month_expense'] ?? 0;
   num get unpaidAmount => stats['unpaid_invoices_amount'] ?? 0;
+  num get totalUnpaidThisMonth => unpaidAmount;
   int get unpaidCount => stats['unpaid_invoices_count'] ?? 0;
   int get totalCustomers => stats['total_customers'] ?? 0;
   int get activeCustomers => stats['active_customers'] ?? 0;
