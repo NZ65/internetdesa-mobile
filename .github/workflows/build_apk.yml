@@ -51,6 +51,6 @@ jobs:
             -F "apk=@build/app/outputs/flutter-apk/app-release.apk" \
             -F "version=$VER_NAME" \
             -F "version_code=$VER_CODE" \
-            -F "changelog=Update v1.6.0: Pure Blue Archive SCHALE Tactical Terminal (No cartoon mascot), Vector Kivotos Halo, MomoTalk Dispatch Console, and Tactical Mission Board." \
+            -F "changelog=Update v$VER_NAME: Rebuild total dengan Zenless Zone Zero (ZZZ) Urban Street Anime Aesthetic, Dark Carbon HUD, Neon Cyan telemetry, live optical power, dan manajemen NOC." \
             && echo "✅ Auto-deploy to server SUCCEEDED!" \
             || echo "⚠️ Direct server upload failed, artifact is still safely saved in GitHub."
