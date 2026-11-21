@@ -34,6 +34,8 @@ class TicketModel {
   });
 
   bool get isOpen => status == 'open' || status == 'in_progress';
+  bool get isUrgent => priority.toLowerCase() == 'urgent' || priority.toLowerCase() == 'high';
+  String get category => title;
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     double? parseCoord(dynamic val) {

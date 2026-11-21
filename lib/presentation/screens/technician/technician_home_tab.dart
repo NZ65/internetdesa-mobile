@@ -309,7 +309,9 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                ticket.customerAddress.isNotEmpty ? ticket.customerAddress : 'Alamat tidak tertera',
+                                (ticket.customerAddress != null && ticket.customerAddress!.isNotEmpty)
+                                    ? ticket.customerAddress!
+                                    : 'Alamat tidak tertera',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
@@ -322,7 +324,7 @@ class _TechnicianHomeTabState extends State<TechnicianHomeTab> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              ticket.category.toUpperCase(),
+                              ticket.title.toUpperCase(),
                               style: const TextStyle(
                                 color: AppTheme.hazardYellow,
                                 fontSize: 10,

@@ -9,6 +9,7 @@ class ZzzCard extends StatelessWidget {
   final Color? borderColor;
   final VoidCallback? onTap;
   final bool hasGlow;
+  final bool isAccent;
 
   const ZzzCard({
     super.key,
@@ -19,10 +20,13 @@ class ZzzCard extends StatelessWidget {
     this.borderColor,
     this.onTap,
     this.hasGlow = false,
+    this.isAccent = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBorderColor = borderColor ?? (isAccent ? AppTheme.neonCyan : AppTheme.borderDark);
+    final effectiveGlow = hasGlow || isAccent;
     Widget content = child;
 
     if (tag != null) {
@@ -38,7 +42,7 @@ class ZzzCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppTheme.bgDark,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: borderColor ?? AppTheme.neonCyan, width: 1),
+                border: Border.all(color: effectiveBorderColor, width: 1),
               ),
               child: Text(
                 tag!.toUpperCase(),
@@ -46,7 +50,7 @@ class ZzzCard extends StatelessWidget {
                   fontSize: 9,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
-                  color: borderColor ?? AppTheme.neonCyan,
+                  color: effectiveBorderColor,
                 ),
               ),
             ),
@@ -61,13 +65,13 @@ class ZzzCard extends StatelessWidget {
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: borderColor ?? AppTheme.borderDark,
-          width: hasGlow ? 1.5 : 1.0,
+          color: effectiveBorderColor,
+          width: effectiveGlow ? 1.5 : 1.0,
         ),
-        boxShadow: hasGlow
+        boxShadow: effectiveGlow
             ? [
                 BoxShadow(
-                  color: (borderColor ?? AppTheme.neonCyan).withOpacity(0.25),
+                  color: effectiveBorderColor.withOpacity(0.25),
                   blurRadius: 16,
                   spreadRadius: 1,
                   offset: const Offset(0, 4),

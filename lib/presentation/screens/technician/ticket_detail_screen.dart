@@ -159,7 +159,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   const Text('Keluhan / Gejala Gangguan:', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
                   Text(
-                    t.description.isNotEmpty ? t.description : 'Tidak ada catatan keluhan tertulis.',
+                    (t.description != null && t.description!.isNotEmpty) ? t.description! : 'Tidak ada catatan keluhan tertulis.',
                     style: const TextStyle(color: AppTheme.textWhite, fontSize: 13, height: 1.4),
                   ),
                 ],
@@ -179,24 +179,26 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          t.customerAddress.isNotEmpty ? t.customerAddress : 'Alamat tidak tertera',
+                          (t.customerAddress != null && t.customerAddress!.isNotEmpty)
+                              ? t.customerAddress!
+                              : 'Alamat tidak tertera',
                           style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
                         ),
                       ),
                     ],
                   ),
-                  if (t.customerPhone.isNotEmpty) ...[
+                  if (t.customerPhone != null && t.customerPhone!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         const Icon(Icons.phone_outlined, color: AppTheme.neonGreen, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(t.customerPhone, style: const TextStyle(color: AppTheme.textWhite, fontSize: 13)),
+                          child: Text(t.customerPhone!, style: const TextStyle(color: AppTheme.textWhite, fontSize: 13)),
                         ),
                         IconButton(
                           icon: const Icon(Icons.call, color: AppTheme.neonGreen, size: 20),
-                          onPressed: () => _callPhone(t.customerPhone),
+                          onPressed: () => _callPhone(t.customerPhone!),
                         ),
                       ],
                     ),

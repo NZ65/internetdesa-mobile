@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
-enum ZzzBadgeType { cyan, yellow, green, red, purple, muted }
+enum ZzzBadgeType { cyan, yellow, green, red, purple, muted, success, danger }
 
 class ZzzBadge extends StatelessWidget {
   final String text;
@@ -11,11 +11,12 @@ class ZzzBadge extends StatelessWidget {
 
   const ZzzBadge({
     super.key,
-    required this.text,
+    String? text,
+    String? label,
     this.type = ZzzBadgeType.cyan,
     this.icon,
     this.fontSize = 10,
-  });
+  }) : text = (text != null && text.isNotEmpty) ? text : (label ?? '');
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +36,13 @@ class ZzzBadge extends StatelessWidget {
         border = AppTheme.hazardYellow.withOpacity(0.4);
         break;
       case ZzzBadgeType.green:
+      case ZzzBadgeType.success:
         bg = AppTheme.neonGreen.withOpacity(0.12);
         fg = AppTheme.neonGreen;
         border = AppTheme.neonGreen.withOpacity(0.4);
         break;
       case ZzzBadgeType.red:
+      case ZzzBadgeType.danger:
         bg = AppTheme.crimsonRed.withOpacity(0.12);
         fg = AppTheme.crimsonRed;
         border = AppTheme.crimsonRed.withOpacity(0.4);

@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/sound_effects.dart';
 
 enum ZzzButtonStyle { primary, secondary, danger, outline }
+enum ZzzButtonType { cyan, yellow, danger, muted, outline }
 
 class ZzzButton extends StatelessWidget {
   final String text;
@@ -13,16 +14,35 @@ class ZzzButton extends StatelessWidget {
   final double? width;
   final double height;
 
-  const ZzzButton({
+  ZzzButton({
     super.key,
-    required this.text,
+    String? text,
+    String? label,
     this.icon,
     required this.onPressed,
-    this.style = ZzzButtonStyle.primary,
+    ZzzButtonStyle? style,
+    ZzzButtonType? type,
     this.isLoading = false,
     this.width,
     this.height = 46,
-  });
+  })  : text = (text != null && text.isNotEmpty) ? text : (label ?? ''),
+        style = style ?? _resolveType(type);
+
+  static ZzzButtonStyle _resolveType(ZzzButtonType? type) {
+    if (type == null) return ZzzButtonStyle.primary;
+    switch (type) {
+      case ZzzButtonType.cyan:
+        return ZzzButtonStyle.primary;
+      case ZzzButtonType.yellow:
+        return ZzzButtonStyle.primary;
+      case ZzzButtonType.danger:
+        return ZzzButtonStyle.danger;
+      case ZzzButtonType.muted:
+        return ZzzButtonStyle.secondary;
+      case ZzzButtonType.outline:
+        return ZzzButtonStyle.outline;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
