@@ -79,7 +79,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               Navigator.pop(ctx);
               final success = await context.read<TechnicianProvider>().resolveTicket(
                 widget.ticket.id,
-                notes: notesCtrl.text.trim(),
+                notesCtrl.text.trim(),
               );
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

@@ -43,10 +43,11 @@ class TechnicianProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> resolveTicket(int ticketId, String resolutionNotes) async {
+  Future<bool> resolveTicket(int ticketId, [String resolutionNotes = '', String? notes]) async {
+    final effectiveNotes = (notes != null && notes.isNotEmpty) ? notes : resolutionNotes;
     try {
       final res = await ApiClient().post('${AppConfig.epTechnicianTickets}/$ticketId/resolve', data: {
-        'resolution_notes': resolutionNotes.trim(),
+        'resolution_notes': effectiveNotes.trim(),
       });
       if (res['success'] == true) {
         SoundEffects.playSuccess();

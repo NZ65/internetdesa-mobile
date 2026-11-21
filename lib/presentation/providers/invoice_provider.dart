@@ -25,6 +25,7 @@ class InvoiceProvider extends ChangeNotifier {
     String? status,
     int page = 1,
     bool silent = false,
+    String? search,
   }) async {
     if (status != null) _currentStatus = status;
     _currentPage = page;
@@ -36,11 +37,16 @@ class InvoiceProvider extends ChangeNotifier {
     }
 
     try {
-      final res = await ApiClient().get(AppConfig.epInvoices, queryParameters: {
+      final Map<String, dynamic> queryParams = {
         'status': _currentStatus,
         'page': _currentPage,
         'limit': 30,
-      });
+      };
+      if (search != null && search.trim().isNotEmpty) {
+        queryParams['search'] = search.trim();
+      }
+
+      final res = await ApiClient().get(AppConfig.epInvoices, queryParameters: queryParams);
 
       if (res['success'] == true && res['data'] != null) {
         final data = res['data'];

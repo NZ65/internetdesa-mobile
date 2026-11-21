@@ -28,6 +28,8 @@ class InvoiceModel {
   });
 
   bool get isPaid => status == 'paid';
+  String get invoiceNumber => invoiceNo;
+  num get amount => total;
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     return InvoiceModel(

@@ -16,7 +16,7 @@ class ZzzBadge extends StatelessWidget {
     this.type = ZzzBadgeType.cyan,
     this.icon,
     this.fontSize = 10,
-  }) : text = (text != null && text.isNotEmpty) ? text : (label ?? '');
+  }) : text = text ?? label ?? '';
 
   @override
   Widget build(BuildContext context) {

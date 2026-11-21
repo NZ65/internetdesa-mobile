@@ -34,6 +34,7 @@ class ExpenseModel {
   });
 
   bool get isExpense => type == 'out';
+  String get createdAt => transactionDate;
 
   factory ExpenseModel.fromJson(Map<String, dynamic> json) {
     return ExpenseModel(
